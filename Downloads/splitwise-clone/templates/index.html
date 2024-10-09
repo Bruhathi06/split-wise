@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Friends and Groups</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to Friends and Groups</h1>
+        <p>Manage your friends and their group memberships.</p>
+    </header>
+
+    <main>
+        <section class="features">
+            <!-- Friends Section -->
+            <div class="feature">
+                <h3>Friends</h3>
+                <form action="{{ url_for('add_friend') }}" method="post">
+                    <input type="text" name="friend_name" placeholder="Enter friend's name" required>
+                    <input type="text" name="phone" placeholder="Enter phone number">
+                    <input type="email" name="email" placeholder="Enter email">
+                    <button type="submit">Add Friend</button>
+                </form>
+                <ul>
+                    {% for friend in friends %}
+                        <li>
+                            {{ friend[1] }} - {{ friend[2] or 'No phone' }} - {{ friend[3] or 'No email' }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <!-- Groups Section -->
+            <div class="feature">
+                <h3>Groups</h3>
+                <form action="{{ url_for('add_to_group') }}" method="post">
+                    <label for="group_name">Group Name:</label>
+                    <input type="text" name="group_name" id="group_name" placeholder="Enter group name" required>
+                    
+                    <label for="friend_to_add">Add Friend:</label>
+                    <select name="friend_to_add" id="friend_to_add" required>
+                        <option value="" disabled selected>Select a friend</option>
+                        {% for friend in friends %}
+                            <option value="{{ friend[0] }}">{{ friend[1] }}</option>
+                        {% endfor %}
+                    </select>
+                    <button type="submit">Add to Group</button>
+                </form>
+                
+                <ul>
+                    {% for group_name, members in groups.items() %}
+                        <li><strong>{{ group_name }}:</strong> {{ ', '.join(members) }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Friends and Groups</p>
+    </footer>
+</body>
+</html>
