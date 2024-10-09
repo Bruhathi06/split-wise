@@ -11,9 +11,6 @@ app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Session management
 
 mail = Mail(app)
-# users_db = {
-#     "pavan@sujainfo.com": {"name": "John Doe", "password": "hashed_password"}
-# }
 
 def CheckUser(email):
     conn = sqlite3.connect(db_path)
