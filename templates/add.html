@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Friends/Groups</title>
+</head>
+<body>
+    <h1>Add a Friend</h1>
+    <form method="POST" action="{{ url_for('add_friend') }}">
+        <input type="text" name="friend_name" placeholder="Friend's Name" required>
+        <input type="text" name="phone" placeholder="Phone">
+        <input type="email" name="email" placeholder="Email">
+        <button type="submit">Add Friend</button>
+    </form>
+
+    <h1>Add to Group</h1>
+    <form method="POST" action="{{ url_for('add_to_group') }}">
+        <input type="text" name="group_name" placeholder="Group Name" required>
+        <input type="text" name="friend_to_add" placeholder="Friend to Add" required>
+        <button type="submit">Add to Group</button>
+    </form>
+
+    <a href="{{ url_for('home') }}">Back to Home</a>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groups</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .group-container {
+            margin-bottom: 30px;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .group-container h2 {
+            margin: 0;
+            color: #4CAF50;
+        }
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        li {
+            background-color: #f9f9f9;
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Your Groups and Members</h1>
+
+    <!-- Display each group and its members -->
+    {% for group_name, members in groups.items() %}
+    <div class="group-container">
+        <h2>Group: {{ group_name }}</h2>
+        <p><strong>Members:</strong></p>
+        <ul>
+            {% for member in members %}
+            <li>{{ member }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endfor %}
+
+    <!-- Optional: Display SQLite sequence data if needed -->
+    <h2>SQLite Sequence Information</h2>
+    <ul>
+        {% for sequence in sequence_data %}
+        <li>{{ sequence }}</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{{ url_for('home') }}">Back to Home</a>
+
+</body>
+</html>

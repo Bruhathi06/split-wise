@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        header {
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(90deg, #4CAF50, #3EA055); /* Green gradient colors */
+            color: white;
+        }
+        header h1 {
+            font-size: 52px;
+            font-weight: bold;
+            margin: 0;
+        }
+        header p {
+            font-size: 20px;
+        }
+        .container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            padding: 40px;
+        }
+        .icon {
+            margin: 20px;
+            padding: 20px;
+            display: inline-block;
+            text-align: center;
+            border-radius: 10px;
+            width: 160px; /* Adjusted size */
+            height: 160px; /* Adjusted size */
+            line-height: 160px;
+            vertical-align: middle;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .icon a {
+            text-decoration: none;
+            font-size: 50px; /* Icon size adjusted */
+            color: #333;
+            display: block;
+            line-height: normal;
+        }
+        .icon:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+        }
+        footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 20px 0;
+            position: relative;
+            bottom: 0;
+            width: 100%;
+        }
+        footer p {
+            margin: 0;
+        }
+        /* Styling for app download logos */
+        .download-links {
+            margin-top: 20px;
+        }
+        .download-links img {
+            width: 150px;
+            margin: 10px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header with a prominent welcome message -->
+    <header>
+        <h1>Welcome to Splitwise Clone</h1>
+        <p>Manage your expenses with ease</p>
+    </header>
+
+    <!-- Container for icons -->
+    <div class="container">
+        <div class="icon">
+            <a href="{{ url_for('friends') }}"><i class="fas fa-user-friends"></i></a>
+            <span>Friends</span>
+
+        </div>
+        
+        <div class="icon">
+            <a href="{{ url_for('groups') }}"><i class="fas fa-users"></i></a>
+        
+            <span>Groups</span>
+
+        </div>
+
+        <div class="icon">
+            <a href="{{ url_for('account') }}"><i class="fas fa-user-circle"></i></a>
+            <span>Account</span>
+        </div>
+
+        <div class="icon">
+            <a href="{{ url_for('activity') }}"><i class="fas fa-chart-line"></i></a>
+            <span>Activity</span>
+
+        </div>
+        
+        <div class="icon">
+            <a href="{{ url_for('add') }}"><i class="fas fa-plus-circle"></i></a>
+            <span>Add Friends/Groups</span>
+
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2024 Splitwise Clone. All rights reserved.</p>
+        <div class="download-links">
+            <a href="https://play.google.com/store/apps"><img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play"></a>
+            <a href="https://www.apple.com/app-store/"><img src="https://developer.apple.com/app-store/marketing/guidelines/images/badge-example-preferred_2x.png" alt="Download on the App Store"></a>
+        </div>
+    </footer>
+
+</body>
+</html>

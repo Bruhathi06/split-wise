@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Splitwise Clone - Home</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 50px;
+        }
+        .icon {
+            margin: 20px;
+            padding: 20px;
+            display: inline-block;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 10px;
+            width: 120px;
+            height: 120px;
+            line-height: 120px;
+            vertical-align: middle;
+            background-color: #f2f2f2;
+        }
+        .icon a {
+            text-decoration: none;
+            font-size: 20px;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Welcome to Splitwise Clone</h1>
+    
+    <div class="icon">
+        <a href="{{ url_for('friends') }}">Friends</a>
+    </div>
+    
+    <div class="icon">
+        <a href="{{ url_for('groups') }}">Groups</a>
+    </div>
+    
+    <div class="icon">
+        <a href="{{ url_for('account') }}">Account</a>
+    </div>
+    
+    <div class="icon">
+        <a href="{{ url_for('activity') }}">Activity</a>
+    </div>
+    
+    <div class="icon">
+        <a href="{{ url_for('add') }}">Add</a>
+    </div>
+
+</body>
+</html>
