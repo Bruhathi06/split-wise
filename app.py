@@ -110,7 +110,7 @@ def register():
             conn.close()
 
             session['username'] = name
-            return redirect(url_for('welcome'))
+            return redirect(url_for('splitwise_home'))
 
         except sqlite3.IntegrityError:
             return 'Email already exists. Please use a different one.' 
@@ -132,22 +132,36 @@ def login():
         user = cursor.fetchone()
         conn.close()
 
+        # if user:
+        #     session['username'] = user[0]
+        #     return redirect(url_for('welcome'))
+        # else:
+        #     flash("Invalid email or password")
+        #     redirect(url_for('login'))
+        #     #return 'Invalid email or password'
         if user:
-            session['username'] = user[0]
-            return redirect(url_for('welcome'))
+            session['username'] = user[0]  # Save the user's name in the session
+            return redirect(url_for('splitwise_home'))  # Redirect to splitwise home page
         else:
-            flash("Invalid email or password")
-            redirect(url_for('login'))
-            #return 'Invalid email or password'
+            flash("Invalid email or password", "danger")
+            return redirect(url_for('login'))  # Don't forget the return statement
+
 
     return render_template('login.html')
 
 # Welcome page after successful registration or login  
-@app.route('/welcome')
-def welcome():
-    if 'username' in session:
-        return f'Welcome to Splitwise, {session["username"]}!'  
-    return redirect(url_for('home'))
+# @app.route('/welcome')
+# def welcome():
+#     if 'username' in session:
+#         return f'Welcome to Splitwise, {session["username"]}!'  
+#     return redirect(url_for('home'))
+@app.route('/home')
+def splitwise_home():
+    if 'username' in session:  # Check if the user is logged in
+        return render_template('splitwise_home.html')  # Render the main Splitwise page
+    else:
+        return redirect(url_for('login'))  # Redirect to login if not logged in
+
 
 
     
@@ -193,7 +207,7 @@ def reset_password(token):
         if request.method == 'POST':
             new_password = request.form['password']
             # Here, you should hash the new password before saving
-            users_db[email]['password'] = new_password  # Update password (replace with hashed password)
+            users[email]['password'] = new_password  # Update password (replace with hashed password)
             flash('Your password has been reset!', 'success')
             return redirect(url_for('forgot_password'))
         return  render_template("resetpassword.html",email=email) 
