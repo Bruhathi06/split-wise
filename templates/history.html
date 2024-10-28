@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+
+    <title>history</title>
+</head>
+<body>
+    
+<div class="row">
+    {% for row in userData%}
+    <div class="col-sm-4">
+        
+        <div class="card">
+  
+            <div class="card-body">
+              <h5 class="card-title">{{row[0]}}</h5>
+              <p class="card-text">Total : {{row[3]}}</p>
+              <p class="card-text">{{row[4]}}:{{row[1]}}</p>
+              <p class="card-text">{{row[5]}}:{{row[2]}}</p>
+              
+            </div>
+          </div>
+          
+
+    </div>
+    {% endfor %}
+</div>
+
+
+</body>
+</html>
