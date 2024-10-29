@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Account Settings</title>
+    <!-- Linking to external CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <!-- Favicon setup -->
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='favicon.ico') }}">
+</head>
+<body>
+
+<div class="container">
+    <h2>User Account Settings</h2>
+
+    <!-- Edit Name and Profile Picture -->
+    <div class="profile-section">
+        <form id="profileForm" enctype="multipart/form-data" method="POST" action="/update_profile">
+            <label for="name">Edit Name:</label>
+            <input type="text" id="name" name="name" placeholder="Your Name" required>
+
+            <label for="profilePicture">Edit Profile Picture:</label>
+            <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
+            
+            <img id="profilePreview" src="" alt="Profile Picture Preview">
+
+            <button type="submit" class="btn">Save Changes</button>
+        </form>
+    </div>
+
+    <!-- QR Code Generation -->
+        <!--<div class="qr-section">
+        <h3>Share Your Account</h3>
+        <button class="btn" id="generateQR">Generate QR Code</button>
+        <div id="qrCode"></div>
+    </div>
+
+    <!-- Contact Us Form -->
+    <div class="contact-section">
+        <h3>Contact Us</h3>
+        <form id="contactForm" method="POST" action="/contact_us">
+            <label for="contactName">Name:</label>
+            <input type="text" id="contactName" name="contactName" placeholder="Your Name" required>
+
+            <label for="email">Email:</label>
+            <input type="email" id="email" name="email" placeholder="Your Email" required>
+
+            <label for="message">Message:</label>
+            <textarea id="message" name="message" rows="4" placeholder="Your Message" required></textarea>
+
+            <button type="submit" class="btn">Send Message</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    // QR Code generation logic
+    //document.getElementById("generateQR").addEventListener("click", function() {
+        //fetch("/generate_qr")
+        //.then(response => response.json())
+        //.then(data => {
+            //document.getElementById("qrCode").innerHTML = '<img src="' + data.qr_code + '" alt="QR Code">';
+        //});
+    //});
+
+    // Profile picture preview functionality
+    document.getElementById("profilePicture").addEventListener("change", function() {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            document.getElementById("profilePreview").src = e.target.result;
+        };
+        reader.readAsDataURL(this.files[0]);
+    });
+</script>
+
+
+    <!-- Sign-out Button -->
+    <div class="signout-section">
+        <button class="btn" id="signOutBtn">Sign Out</button>
+    </div>
+
+    <script>
+        // Sign-out confirmation and redirection logic
+        document.getElementById("signOutBtn").addEventListener("click", function() {
+            if (confirm("Are you sure you want to sign out?")) {
+                window.location.href = "/";// Redirect to the logout route
+            }
+        });
+    </script>
+    </body>
+    
+</html>

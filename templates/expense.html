@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense</title>
+    <link rel="stylesheet" href="../static/home.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/css/bootstrap.min.css" integrity="sha384-xOolHFLEh07PJGoPkLv1IbcEPTNtaed2xpHsD9ESMhqIYd0nLMwNLD69Npy4HI+N" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.5.1/dist/jquery.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.2/dist/js/bootstrap.min.js" integrity="sha384-+sLIOodYLS7CIrQpBjl+C7nPvqq+FbNUBDunl/OZv93DB7Ln/533i8e/mZXLi/P+" crossorigin="anonymous"></script>
+
+
+
+</head>
+<body>
+
+    <script>
+document.getElementById("submitButton").addEventListener("keydown", handleEnter);
+
+        function showAlert()
+        {
+    
+            alert('clicked');
+            var total = document.getElementById("total").value;
+            document.getElementById('container2').innerHTML = `<div class="row">
+                <br>
+                <label>Your Frient Expense:</label>
+    <input type="number" name="partnerExpense" class='form-control' id="partnerExpense" value=${total/2} onkeydown="addYourExpense(event)" placeholder="Enter your partner expense">
+    <br><br>
+    
+</div>`;
+
+document.getElementById('container3').innerHTML=
+                `<label>Your Expense:</label>
+                <input type="number" name="creatorExpense" class='form-control' placeholder="Enter your expense" value=${total/2}>`
+
+                document.getElementById('container4').innerHTML=
+                `<input type="submit" id="submitButton" class="btn btn-primary" value="submit">`;
+
+        }
+function  handleEnter(event) {
+            if (event.key === "Enter") {
+                event.preventDefault(); // Prevent form submission
+            }
+        }
+
+        function addYourExpense()
+        {
+            
+            if(event.key == " ")
+        {
+            var partnerExpense = document.getElementById("partnerExpense").value;
+            var total = document.getElementById("total").value;
+            var remain = total-partnerExpense;
+                document.getElementById('container3').innerHTML=
+                `<label>Your Expense:</label>
+                <input type="number" name="creatorExpense" class='form-control' placeholder="Enter your expense" value=${total/2}>`
+
+                document.getElementById('container4').innerHTML=
+                `<input type="submit" id="submitButton" class="btn btn-primary" value="submit">`;
+
+        }
+        }
+        
+    </script>
+<form action="/addExpense" method="POST">
+
+<div class="container col-offset 4">
+    <div class="row">
+        <label for="expenseName">What is the Expense For?</label>
+        <input type="text" name="expenseName" id="" class="form-control">
+    </div>
+<div class="row">
+    <label for="total">Total Expense Amount:</label>
+    <input type="number" name="total" class="form-control" placeholder="enter total expense" id="total">
+    <br>
+</div>
+<div style="display: none;">
+    <input type="text" name="currentUser" value="{{username}}">
+    <input type="number" name="currentUserId" value="{{currentUserId}}">
+</div>
+<div class="row">
+    <select class="custom-select" name="pid"  onchange="showAlert()">
+        <option selected>Choose a Friend from Contacts:</option>
+    {% for row in usersData%}    
+        <option value={{row[0]}} name="partnerId"  >{{row[2]}}</option>
+              
+    {% endfor %}
+</select>
+</div>
+<br>
+<div id="container2" class="container col-offset 4">
+
+
+
+</div>
+<div id="container3" class="container col-offset 4">
+
+
+
+</div>
+
+
+</div>
+<div id="container4" class="container col-offset 4">
+    
+</div>
+
+</form>
+
+
+
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groups Management</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #e8f5e9; /* Light green background */
+        }
+        .container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+        h1 {
+            color: #388e3c; /* Dark green text */
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: #4caf50; /* Green background */
+            color: #ffffff; /* White text */
+            border: none;
+            padding: 15px 25px;
+            margin: 10px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+        button:hover {
+            background-color: #388e3c; /* Darker green on hover */
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Groups Management</h1>
+        <div>
+            <button onclick="window.location.href='/create_group'">Create Group</button>
+            <button onclick="window.location.href='/view_groups'">View Groups</button>
+            <button onclick="window.location.href='/split_expense'">Split Expense</button>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Create Group</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        form {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            background-color: #ecf0f1;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+        input[type="text"], input[type="email"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #3498db;
+            color: white;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .member {
+            margin-bottom: 15px;
+            padding: 10px;
+            border: 1px solid #bdc3c7;
+            border-radius: 5px;
+            background-color: #dfe6e9;
+        }
+    </style>
+    <script>
+        function addMember() {
+            const memberDiv = document.createElement('div');
+            memberDiv.className = 'member';
+            memberDiv.innerHTML = `
+                <label>Name:</label>
+                <input type="text" name="member_name" required><br>
+                <label>Phone:</label>
+                <input type="text" name="phone" required><br>
+                <label>Email:</label>
+                <input type="email" name="email" required><br>
+            `;
+            document.getElementById('members-container').appendChild(memberDiv);
+        }
+    </script>
+</head>
+<body>
+    <h1>Create a New Group</h1>
+    <form action="{{ url_for('create_group') }}" method="POST">
+        <label>Group Name:</label>
+        <input type="text" name="group_name" required><br>
+
+        <h2>Add Member</h2>
+        <div id="members-container">
+            <div class="member">
+                <label>Name:</label>
+                <input type="text" name="member_name" required><br>
+                <label>Phone:</label>
+                <input type="text" name="phone" required><br>
+                <label>Email:</label>
+                <input type="email" name="email" required><br>
+            </div>
+        </div>
+        <button type="button" onclick="addMember()">Add Another Member</button><br>
+        
+        <button type="submit">Create Group</button>
+    </form>
+</body>
+</html>
