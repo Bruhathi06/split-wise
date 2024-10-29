@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Split Expense Result</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h1 {
+            color: #2c3e50;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #bdc3c7;
+        }
+    </style>
+</head>
+<body>
+    <h1>Split Expense Result</h1>
+    <p>Group: {{ group_name }}</p>
+    <p>Category: {{ category }}</p>
+    <p>Total Amount: ${{ total_amount }}</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Member Name</th>
+                <th>Amount Owed</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for member, amount in split_amounts.items() %}
+                <tr>
+                    <td>{{ member }}</td>
+                    <td>${{ amount }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('splitwise_home', username=session['username']) }}">Back to Home</a>
+</body>
+</html>
