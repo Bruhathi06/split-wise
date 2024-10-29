@@ -5,38 +5,82 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            background: #f0f8ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            width: 100%;
+            text-align: center;
+        }
+        h1 {
+            color: #2c3e50;
         }
         label {
             font-weight: bold;
+            display: block;
+            margin: 10px 0 5px;
         }
         input, select {
-            margin-bottom: 10px;
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #4caf50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        a {
+            display: block;
+            margin-top: 15px;
+            color: #4caf50;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <h1>Split Expense</h1>
-    <form method="POST" action="{{ url_for('split_expense') }}">
-        <label for="group_name">Select Group:</label>
-        <select id="group_name" name="group_name" required>
-            <option value="">--Select a Group--</option>
-            {% for group in groups %}
-                <option value="{{ group[0] }}">{{ group[0] }}</option>
-            {% endfor %}
-        </select>
-        <br>
+    <div class="container">
+        <h1>Split Expense</h1>
+        <form method="POST" action="{{ url_for('split_expense') }}">
+            <label for="group_name">Select Group:</label>
+            <select id="group_name" name="group_name" required>
+                <option value="">--Select a Group--</option>
+                {% for group in groups %}
+                    <option value="{{ group[0] }}">{{ group[0] }}</option>
+                {% endfor %}
+            </select>
 
-        <label for="category">Expense Category:</label>
-        <input type="text" id="category" name="category" required>
-        <br>
+            <label for="category">Expense Category:</label>
+            <input type="text" id="category" name="category" required>
 
-        <label for="total_amount">Total Amount:</label>
-        <input type="number" id="total_amount" name="total_amount" step="0.01" required>
-        <br>
+            <label for="total_amount">Total Amount:</label>
+            <input type="number" id="total_amount" name="total_amount" step="0.01" required>
 
-        <button type="submit">Split Equally</button>
-    </form>
-    <a href="{{ url_for('splitwise_home', username=session['username']) }}">Back to Home</a>
+            <button type="submit">Split Equally</button>
+        </form>
+        <a href="{{ url_for('splitwise_home', username=session['username']) }}">Back to Home</a>
+    </div>
 </body>
 </html>
