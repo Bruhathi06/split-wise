@@ -10,6 +10,7 @@
 <body>
     
 <div class="row">
+  
     {% for row in userData%}
     <div class="col-sm-4">
         
@@ -18,8 +19,11 @@
             <div class="card-body">
               <h5 class="card-title">{{row[0]}}</h5>
               <p class="card-text">Total : {{row[3]}}</p>
-              <p class="card-text">{{row[4]}}:{{row[1]}}</p>
-              <p class="card-text">{{row[5]}}:{{row[2]}}</p>
+
+              <p class="card-text">{% if currentUser==row[6]  %} <p>Your contribution is : {{row[1]}}</p> {% else %}{{row[4]}} contribution is :{{row[1]}} {% endif %}</p>
+              
+              
+              <p class="card-text">{% if currentUser==row[7] %} Your contribution is : {{row[2]}} {% else %} {{row[5]}} contribution is :{{row[2]}} {% endif %}</p>
               
             </div>
           </div>

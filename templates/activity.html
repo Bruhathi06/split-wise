@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity Page</title>
+</head>
+<body>
+    <h1>Activity</h1>
+
+    {% for category, transactions in transactions_by_category.items() %}
+        <div class="category-folder">
+            <h2>{{ category }}</h2>
+            {% for transaction in transactions %}
+                <div class="transaction-card">
+                    <h3>{{ transaction.transaction_name }}</h3>
+                    <p>Date: {{ transaction.transaction_date }}</p>
+                    <p>Amount Spent: ${{ transaction.amount_spent }}</p>
+                    <p>Bills Paid: ${{ transaction.bills_paid }}</p>
+                    <p>Bills Owed: ${{ transaction.bills_owed }}</p>
+                    <p>Type: {{ transaction.type }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    {% endfor %}
+</body>
+</html>

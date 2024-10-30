@@ -376,18 +376,26 @@ def addExpense():
 
 @app.route("/history")
 def history():
-    curUser =request.args['curId']
-    
-    query = f'''select expensename,creatoramount,partneramount ,total,
-(select name from users where id=creatorid) as creatorname,
-(select name from users where id= partnerid) as friendname,creatorid,partnerid from expense e where creatorid={curUser} or partnerid={curUser}'''
+    # Get 'curId' from the request arguments or default to the user ID in session
+    curUser = request.args.get('curId') or session.get('id')
+
+    # Check if curUser is still missing, and redirect if necessary
+    if not curUser:
+        flash("User ID is missing. Please log in again.")
+        return redirect(url_for('login'))
+
+    # Query to fetch the history based on curUser
+    query = f'''
+        SELECT expensename, creatoramount, partneramount, total,
+        (SELECT name FROM users WHERE id = creatorid) AS creatorname,
+        (SELECT name FROM users WHERE id = partnerid) AS friendname,
+        creatorid, partnerid 
+        FROM expense e 
+        WHERE creatorid = {curUser} OR partnerid = {curUser}
+    '''
 
     data = QueryAsync(query)
-    print(data)
-    return render_template('history.html',userData=data,currentUser=int(curUser))  
-
-
-
+    return render_template('history.html', userData=data, currentUser=int(curUser))  
 
 # Groups functionalities
 @app.route('/groups')
@@ -547,9 +555,85 @@ def update_profile():
     # Save user name and profile picture to the database (placeholder)
     
     return jsonify({"status": "profile updated"})
+# Add this route to your existing Flask code above
+@app.route('/activity')
+def activity():
+    user_id = session.get('id')
+    if not user_id:
+        flash("Please log in to view your activity.")
+        return redirect(url_for('login'))
 
+    # Query to fetch friends' transactions
+    friends_query = f'''
+        SELECT expensename AS transaction_name, total AS amount_spent, 
+               creatoramount AS bills_paid, partneramount AS bills_owed,
+               date('now') AS transaction_date,
+               CASE WHEN expensename LIKE '%food%' THEN 'Food'
+                    WHEN expensename LIKE '%electricity%' THEN 'Electricity'
+                    WHEN expensename LIKE '%groceries%' THEN 'Groceries'
+                    WHEN expensename LIKE '%bus%' OR expensename LIKE '%train%' THEN 'Transportation'
+                    ELSE 'Other' END AS category
+        FROM expense
+        WHERE creatorid = {user_id} OR partnerid = {user_id}
+    '''
+    friends_transactions = QueryAsync(friends_query)
 
+    # Query to fetch groups' transactions
+    groups_query = f'''
+        SELECT group_name, total_amount AS amount_spent, split_amounts AS split_details,
+               date('now') AS transaction_date, category
+        FROM expenses
+        WHERE group_name IN (SELECT group_name FROM members WHERE id = {user_id})
+    '''
+    groups_transactions = QueryAsync(groups_query)
 
+    # Group transactions by category for easier rendering
+    transactions_by_category = {}
+
+    # Process friends' transactions
+    for row in friends_transactions:
+        transaction = {
+            "transaction_name": row[0],
+            "transaction_date": row[4],
+            "amount_spent": row[1],
+            "bills_paid": row[2],
+            "bills_owed": row[3],
+            "type": "Friend"
+        }
+        category = row[5]
+        transactions_by_category.setdefault(category, []).append(transaction)
+
+    # Process groups' transactions
+    for row in groups_transactions:
+        transaction = {
+            "transaction_name": f"Group: {row[0]}",
+            "transaction_date": row[3],
+            "amount_spent": row[1],
+            "bills_paid": "N/A",
+            "bills_owed": "N/A",
+            "type": "Group"
+        }
+        category = row[4]
+        transactions_by_category.setdefault(category, []).append(transaction)
+
+    return render_template('activity.html', transactions_by_category=transactions_by_category)
+
+@app.route('/view_history/<int:transaction_id>')
+def view_history(transaction_id):
+    # Query details of the specific transaction by ID
+    query = f'''
+        SELECT e.expensename AS transaction_name, e.total AS amount_spent, e.creatoramount AS bills_paid,
+               e.partneramount AS bills_owed, e.creatorid, e.partnerid
+        FROM expense e
+        WHERE e.id = {transaction_id}
+    '''
+    transaction = QueryAsync(query)
+
+    if not transaction:
+        flash("Transaction not found.")
+        return redirect(url_for('activity'))
+
+    return render_template('view_history.html', transaction=transaction[0])
 
 if __name__ == '__main__':
     init_db()  # Initialize the database

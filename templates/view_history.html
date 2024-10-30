@@ -1,0 +1,16 @@
+<!-- view_history.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Transaction Details</title>
+</head>
+<body>
+    <h1>Transaction Details</h1>
+    <p><strong>Transaction Name:</strong> {{ transaction[0] }}</p>
+    <p><strong>Amount Spent:</strong> {{ transaction[1] }}</p>
+    <p><strong>Bills Paid:</strong> {{ transaction[2] }}</p>
+    <p><strong>Bills Owed:</strong> {{ transaction[3] }}</p>
+    <p><a href="{{ url_for('activity') }}">Back to Activity</a></p>
+</body>
+</html>
