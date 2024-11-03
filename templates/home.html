@@ -6,35 +6,80 @@
     <title>Splitwise</title>
     <style>
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            margin: 0;
             font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
+            background-image: url('https://i.postimg.cc/K8qhs1nL/image.png'); /* Use the new hosted image as background */
+            background-size: cover; /* Cover the entire viewport */
+            background-position: center; /* Center the background image */
+            color: #fff; /* Default text color */
+            display: flex;
+            flex-direction: row; /* Align items in a row */
+            height: 100vh; /* Full height of the viewport */
+            text-align: center; /* Center text */
+        }
+        .text-container {
+            flex: 1; /* Take up remaining space */
+            display: flex;
+            justify-content: flex-end; /* Align text to the right */
+            align-items: center; /* Center vertically */
+            padding: 20px; /* Add some padding */
+        }
+        .header {
+            font-size: 36px; /* Increased size for bold visibility */
+            color: #00cc00; /* Green color for the header */
+            font-weight: bold; /* Bold text */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Shadow effect for better readability */
+            margin: 0; /* Remove default margin */
+        }
+        .sub-header {
+            font-size: 24px; /* Increased size for bold visibility */
+            color: #ffffff; /* White color for the sub-header */
+            margin: 10px 0 0 0; /* Margin for spacing */
+            font-weight: bold; /* Bold text */
         }
         .container {
-            text-align: center;
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background */
+            padding: 40px;
+            border-radius: 15px; /* Rounded corners */
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Soft shadow */
+            width: 300px; /* Fixed width */
+            margin-bottom: 30px; /* Space below container */
         }
         h1 {
-            color: green;
+            color: #00cc00; /* Green color for the title */
+            font-size: 48px; /* Increased font size for visibility */
+            margin-bottom: 20px; /* Space below heading */
+            font-weight: bold; /* Make "Splitwise" bold */
         }
         .button {
-            padding: 10px 20px;
+            padding: 12px 20px;
             margin: 10px;
-            background-color: green;
+            background-color: #00cc00; /* Green button color */
             color: white;
             border: none;
+            border-radius: 5px; /* Rounded button */
             cursor: pointer;
+            font-size: 24px; /* Increased font size for buttons */
+            font-weight: bold; /* Make button text bold */
+            transition: background-color 0.3s; /* Smooth transition */
         }
         .button:hover {
-            background-color: darkgreen;
+            background-color: #009900; /* Darker green on hover */
+        }
+        a {
+            text-decoration: none; /* Remove underline from links */
         }
     </style>
 </head>
 <body>
+    <div class="text-container">
+        <div>
+            <div class="header">Shared Ledger for Friends & Groups</div>
+            <div class="sub-header">Keep Track of Your Expenses</div>
+        </div>
+    </div>
     <div class="container">
-        <h1>Splitwise</h1>
+        <h1>SPLITWISE</h1>
         <a href="{{ url_for('register') }}"><button class="button">Sign Up</button></a>
         <a href="{{ url_for('login') }}"><button class="button">Login</button></a>
     </div>

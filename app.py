@@ -556,67 +556,65 @@ def update_profile():
     
     return jsonify({"status": "profile updated"})
 # Add this route to your existing Flask code above
-@app.route('/activity')
-def activity():
-    user_id = session.get('id')
-    if not user_id:
-        flash("Please log in to view your activity.")
-        return redirect(url_for('login'))
+@app.route('/activity', methods=['GET'])
+def get_activity():
+    user_id = request.args.get('user_id')
+    try:
+        user_id = int(user_id)
+    except (ValueError, TypeError):
+        return "Invalid user ID", 400
 
-    # Query to fetch friends' transactions
-    friends_query = f'''
-        SELECT expensename AS transaction_name, total AS amount_spent, 
-               creatoramount AS bills_paid, partneramount AS bills_owed,
-               date('now') AS transaction_date,
-               CASE WHEN expensename LIKE '%food%' THEN 'Food'
-                    WHEN expensename LIKE '%electricity%' THEN 'Electricity'
-                    WHEN expensename LIKE '%groceries%' THEN 'Groceries'
+    # Debug output to verify the user_id
+    print("User ID for activity:", user_id)
+
+    query = f'''
+        SELECT expensename AS transaction_name, total AS amount_spent, creatoramount AS bills_paid, 
+               partneramount AS bills_owed, date('now') AS transaction_date,
+               CASE WHEN expensename LIKE '%food%' THEN 'Food Bill'
+                    WHEN expensename LIKE '%electricity%' THEN 'Electricity Bill'
+                    WHEN expensename LIKE '%groceries%' THEN 'Groceries Bill'
                     WHEN expensename LIKE '%bus%' OR expensename LIKE '%train%' THEN 'Transportation'
                     ELSE 'Other' END AS category
         FROM expense
         WHERE creatorid = {user_id} OR partnerid = {user_id}
     '''
-    friends_transactions = QueryAsync(friends_query)
 
-    # Query to fetch groups' transactions
-    groups_query = f'''
-        SELECT group_name, total_amount AS amount_spent, split_amounts AS split_details,
-               date('now') AS transaction_date, category
-        FROM expenses
-        WHERE group_name IN (SELECT group_name FROM members WHERE id = {user_id})
-    '''
-    groups_transactions = QueryAsync(groups_query)
+    # Retrieve and process the data
+    transactions = QueryAsync(query)
+    print("Transactions fetched:", transactions)  # Debug output
 
-    # Group transactions by category for easier rendering
-    transactions_by_category = {}
-
-    # Process friends' transactions
-    for row in friends_transactions:
-        transaction = {
+    response = [
+        {
             "transaction_name": row[0],
             "transaction_date": row[4],
             "amount_spent": row[1],
             "bills_paid": row[2],
             "bills_owed": row[3],
-            "type": "Friend"
+            "category": row[5]
         }
-        category = row[5]
-        transactions_by_category.setdefault(category, []).append(transaction)
+        for row in transactions
+    ]
+    print("Processed response:", response)  # Debug output for processed data
+    return render_template('activity.html', transactions=response)
 
-    # Process groups' transactions
-    for row in groups_transactions:
-        transaction = {
-            "transaction_name": f"Group: {row[0]}",
-            "transaction_date": row[3],
-            "amount_spent": row[1],
-            "bills_paid": "N/A",
-            "bills_owed": "N/A",
-            "type": "Group"
-        }
-        category = row[4]
-        transactions_by_category.setdefault(category, []).append(transaction)
-
-    return render_template('activity.html', transactions_by_category=transactions_by_category)
+def create_expense_table():
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS expense (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            expensename TEXT NOT NULL,
+            total REAL NOT NULL,
+            creatoramount REAL NOT NULL,
+            partneramount REAL NOT NULL,
+            creatorid INTEGER NOT NULL,
+            partnerid INTEGER NOT NULL,
+            FOREIGN KEY (creatorid) REFERENCES users(id),
+            FOREIGN KEY (partnerid) REFERENCES users(id)
+        )
+    ''')
+    conn.commit()
+    conn.close()
 
 @app.route('/view_history/<int:transaction_id>')
 def view_history(transaction_id):

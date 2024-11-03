@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        /* Design System */
+        :root {
+            --primary-color: #4CAF50;
+            --primary-hover-color: #388E3C;
+            --secondary-color: #333;
+            --background-color: #f5f5f5;
+            --text-color: #333;
+            --card-background: #fff;
+            --border-radius: 8px;
+            --font-family: 'Arial', sans-serif;
+        }
+
+        /* Reset and Base Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: var(--font-family);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            width: 250px;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+        .sidebar h2 {
+            margin-bottom: 20px;
+        }
+        .nav-item {
+            width: 100%;
+            padding: 15px;
+            text-align: center;
+            cursor: pointer;
+            color: white;
+            text-decoration: none;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        .nav-item:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        /* Main Content Area */
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .section h3 {
+            margin-bottom: 10px;
+            font-size: 1.5rem;
+            color: var(--primary-color);
+        }
+
+        /* Card Styles */
+        .card {
+            background-color: var(--card-background);
+            border-radius: var(--border-radius);
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: var(--text-color);
+        }
+
+        /* Button Styles */
+        .button {
+            padding: 10px 20px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button:hover {
+            background-color: var(--primary-hover-color);
+        }
+
+        /* Example Chart or Graphic Placeholder */
+        .chart {
+            background-color: #e0e0e0;
+            border-radius: var(--border-radius);
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <div class="sidebar">
+        <h2>App Name</h2>
+        <a href="#" class="nav-item">Overview</a>
+        <a href="#" class="nav-item">Recent Transactions</a>
+        <a href="#" class="nav-item">Groups</a>
+        <a href="#" class="nav-item">Spending Insights</a>
+        <a href="#" class="nav-item">Settings</a>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Overview Section -->
+        <div class="section" id="overview">
+            <h3>Overview</h3>
+            <div class="card">
+                <div class="card-header">Total Balance</div>
+                <p>Your total balance across all groups and expenses.</p>
+                <div class="chart">Balance Chart</div>
+            </div>
+        </div>
+
+        <!-- Recent Transactions Section -->
+        <div class="section" id="recent-transactions">
+            <h3>Recent Transactions</h3>
+            <div class="card">
+                <div class="card-header">Transaction 1</div>
+                <p>Details of transaction 1.</p>
+            </div>
+            <div class="card">
+                <div class="card-header">Transaction 2</div>
+                <p>Details of transaction 2.</p>
+            </div>
+        </div>
+
+        <!-- Groups Section -->
+        <div class="section" id="groups">
+            <h3>Groups</h3>
+            <div class="card">
+                <div class="card-header">Group 1</div>
+                <p>Details of group 1.</p>
+                <button class="button">View Group</button>
+            </div>
+            <div class="card">
+                <div class="card-header">Group 2</div>
+                <p>Details of group 2.</p>
+                <button class="button">View Group</button>
+            </div>
+        </div>
+
+        <!-- Spending Insights Section -->
+        <div class="section" id="spending-insights">
+            <h3>Spending Insights</h3>
+            <div class="card">
+                <div class="chart">Spending Chart</div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
