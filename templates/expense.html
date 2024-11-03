@@ -21,11 +21,11 @@ document.getElementById("submitButton").addEventListener("keydown", handleEnter)
         function showAlert()
         {
     
-            alert('clicked');
+        
             var total = document.getElementById("total").value;
             document.getElementById('container2').innerHTML = `<div class="row">
                 <br>
-                <label>Your Frient Expense:</label>
+                <label>Your Friend Expense:</label>
     <input type="number" name="partnerExpense" class='form-control' id="partnerExpense" value=${total/2} onkeydown="addYourExpense(event)" placeholder="Enter your partner expense">
     <br><br>
     
@@ -71,6 +71,11 @@ function  handleEnter(event) {
     <div class="row">
         <label for="expenseName">Expense Name:</label>
         <input type="text" name="expenseName" id="" class="form-control">
+    </div>
+
+    <div class="row">
+        <label for="expenseDate">Date:</label>
+        <input type="date" name="date" id="" class="form-control" id="date">
     </div>
 <div class="row">
     <label for="total">Enter total:</label>

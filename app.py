@@ -363,10 +363,10 @@ def addExpense():
     partnerExpense= data['partnerExpense']
     creatorExpense = data['creatorExpense']
     expenseName = data['expenseName']
+    date = data['date']
 
-
-    query =  f''' insert into expense(expensename,creatorid,partnerid,total,creatoramount,partneramount)
-                   values('{expenseName}',{creatorId},{partnerId},{total},{creatorExpense},{partnerExpense}) '''
+    query =  f''' insert into expense(expensename,creatorid,partnerid,total,creatoramount,partneramount,createdon)
+                   values('{expenseName}',{creatorId},{partnerId},{total},{creatorExpense},{partnerExpense},'{date}') '''
     
     InsertAsync(query)
 
@@ -376,26 +376,35 @@ def addExpense():
 
 @app.route("/history")
 def history():
-    # Get 'curId' from the request arguments or default to the user ID in session
-    curUser = request.args.get('curId') or session.get('id')
+    # # Get 'curId' from the request arguments or default to the user ID in session
+    # curUser = request.args.get('curId') or session.get('id')
 
-    # Check if curUser is still missing, and redirect if necessary
-    if not curUser:
-        flash("User ID is missing. Please log in again.")
-        return redirect(url_for('login'))
+    # # Check if curUser is still missing, and redirect if necessary
+    # if not curUser:
+    #     flash("User ID is missing. Please log in again.")
+    #     return redirect(url_for('login'))
 
-    # Query to fetch the history based on curUser
-    query = f'''
-        SELECT expensename, creatoramount, partneramount, total,
-        (SELECT name FROM users WHERE id = creatorid) AS creatorname,
-        (SELECT name FROM users WHERE id = partnerid) AS friendname,
-        creatorid, partnerid 
-        FROM expense e 
-        WHERE creatorid = {curUser} OR partnerid = {curUser}
-    '''
+    # # Query to fetch the history based on curUser
+    # query = f'''
+    #     SELECT expensename, creatoramount, partneramount, total,
+    #     (SELECT name FROM users WHERE id = creatorid) AS creatorname,
+    #     (SELECT name FROM users WHERE id = partnerid) AS friendname,
+    #     creatorid, partnerid 
+    #     FROM expense e 
+    #     WHERE creatorid = {curUser} OR partnerid = {curUser}
+    # '''
+
+    # data = QueryAsync(query)
+    # return render_template('history.html', userData=data, currentUser=int(curUser))  
+    curUser =request.args['curId']
+    
+    query = f'''select expensename,creatoramount,partneramount ,total,
+(select name from users where id=creatorid) as creatorname,
+(select name from users where id= partnerid) as friendname,creatorid,partnerid,createdon from expense e where creatorid={curUser} or partnerid={curUser}'''
 
     data = QueryAsync(query)
-    return render_template('history.html', userData=data, currentUser=int(curUser))  
+    print(data)
+    return render_template('history.html',userData=data,currentUser=int(curUser))
 
 # Groups functionalities
 @app.route('/groups')

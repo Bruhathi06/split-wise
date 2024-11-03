@@ -5,7 +5,7 @@ body {
     height: 80vh;
     font-family: Arial, sans-serif;
     margin: 2px;
-    background-image: url('https://i.postimg.cc/K8qhs1nL/image.png'); /* host image path for testing */
+    background-image: url('https://www.shutterstock.com/image-vector/green-theme-background-underwater-concept-260nw-2181142547.jpg'); /* host image path for testing */
     background-size: cover; /* Ensure the image covers the entire background */
     background-position: center; /* Center the background image */
     background-repeat: no-repeat; /* Prevent the background from repeating */
