@@ -238,7 +238,7 @@ def splitwise_home(username):
     print(request.args)
     if 'username' in session:  # Check if the user is logged in
         print("the user name in home is :",username) 
-        return render_template('splitwise_home.html',username=username,ids=request.args['id'])   # Render the main Splitwise page
+        return render_template('splitwise_home.html',username=username)   # Render the main Splitwise page
     else:
         return redirect(url_for('login'))  # Redirect to login if not logged in
 
@@ -519,15 +519,6 @@ def split_expense():
 def index():
     return render_template('index.html')
 
-@app.route('/generate_qr')
-def generate_qr():
-    # Simulate user account URL
-    account_url = "http://www.google.com"
-    img = qrcode.make(account_url)
-    img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'qr_code.png')
-    img.save(img_path)
-    
-    return jsonify({'qr_code': url_for('static', filename='uploads/qr_code.png')})
 
 @app.route('/contact_us', methods=['POST'])
 def contact_us():
