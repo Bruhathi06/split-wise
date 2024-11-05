@@ -1,5 +1,4 @@
 
-
 from flask import Flask, render_template, request,jsonify, redirect, url_for, session,flash,render_template_string
 import sqlite3
 import os
@@ -470,6 +469,7 @@ def split_expense():
         group_name = request.form.get('group_name')
         category = request.form.get('category')
         total_amount = request.form.get('total_amount')
+        date = request.form.get('date')
 
         if not group_name or not category or not total_amount:
             flash("Please fill in all fields", "danger")
@@ -498,14 +498,14 @@ def split_expense():
         split_amounts = {member[0]: split_amount for member in members}
 
         # Insert the expense into the database
-        cursor.execute('INSERT INTO expenses (group_name, category, total_amount, split_amounts) VALUES (?, ?, ?, ?)',
+        cursor.execute('INSERT INTO group_expenses (group_name, category, total_amount, split_amounts, date) VALUES (?, ?, ?, ?, ?)',
                        (group_name, category, total_amount, str(split_amounts)))
         conn.commit()
         conn.close()
 
         # Pass the calculated split_amounts and other details to the result template
         return render_template('split_result.html', group_name=group_name, category=category,
-                               total_amount=total_amount, split_amounts=split_amounts)
+                               total_amount=total_amount, split_amounts=split_amounts, date=date)
 
     # Handling GET request to show available groups
     conn = sqlite3.connect(db_path)
