@@ -523,16 +523,6 @@ def split_expense():
 def index():
     return render_template('index.html')
 
-@app.route('/generate_qr')
-def generate_qr():
-    # Simulate user account URL
-    account_url = "http://www.google.com"
-    img = qrcode.make(account_url)
-    img_path = os.path.join(app.config['UPLOAD_FOLDER'], 'qr_code.png')
-    img.save(img_path)
-    
-    return jsonify({'qr_code': url_for('static', filename='uploads/qr_code.png')})
-
 @app.route('/contact_us', methods=['POST'])
 def contact_us():
     name = request.form.get('contactName')
