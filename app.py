@@ -118,6 +118,9 @@ def init_db():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
+    cursor.execute('DROP TABLE IF EXISTS expenses')
+    cursor.execute('DROP TABLE IF EXISTS group_expenses')
+
     # Create users table with email, password, name, and phone number
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS users (
@@ -147,17 +150,32 @@ def init_db():
         )
     ''')
 
-     # Create Expenses table
+     # Create group_expenses table
     cursor.execute('''
-        CREATE TABLE IF NOT EXISTS expenses (
+        CREATE TABLE IF NOT EXISTS group_expenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             group_name TEXT NOT NULL,
             category TEXT NOT NULL,
             total_amount REAL NOT NULL,
-            split_amounts TEXT NOT NULL,
-            FOREIGN KEY (group_name) REFERENCES groups_table(group_name)
+            payer TEXT NOT NULL,
+            date TEXT NOT NULL,
+            FOREIGN KEY (group_name) REFERENCES groups_table(group_name),
+            FOREIGN KEY (payer) REFERENCES users(name)
         )
     ''')
+
+    # Create expense_details table
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS expense_details (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            expense_id INTEGER NOT NULL,
+            member_name TEXT NOT NULL,
+            amount_owed REAL NOT NULL,
+            FOREIGN KEY (expense_id) REFERENCES group_expenses(id),
+            FOREIGN KEY (member_name) REFERENCES members(name)
+        )
+    ''')
+    
     conn.commit()
     conn.close()
 
@@ -470,8 +488,9 @@ def split_expense():
         category = request.form.get('category')
         total_amount = request.form.get('total_amount')
         date = request.form.get('date')
+        payer = session['username']  # Automatically set the payer to the logged-in user
 
-        if not group_name or not category or not total_amount:
+        if not group_name or not category or not total_amount or not date:
             flash("Please fill in all fields", "danger")
             return redirect(url_for('split_expense'))
 
@@ -486,20 +505,35 @@ def split_expense():
 
         # Get all the members of the selected group
         cursor.execute('SELECT name FROM members WHERE group_name = ?', (group_name,))
-        members = cursor.fetchall()
+        members = [member[0] for member in cursor.fetchall()]
 
         if not members:
             conn.close()
             flash("No members found in the selected group. Please add members before splitting expenses.", "danger")
             return redirect(url_for('split_expense'))
+        
+        # Calculate how much each member owes the payer
+        members_owe = [member for member in members if member != payer]
+        if len(members_owe) == 0:
+            conn.close()
+            flash("No members to split the expense with.", "danger")
+            return redirect(url_for('split_expense'))
 
         # Calculate split amounts
         split_amount = total_amount / len(members)
-        split_amounts = {member[0]: split_amount for member in members}
+        split_amounts = {member: split_amount for member in members}
+        split_amounts[payer] = 0 
 
-        # Insert the expense into the database
-        cursor.execute('INSERT INTO group_expenses (group_name, category, total_amount, split_amounts, date) VALUES (?, ?, ?, ?, ?)',
-                       (group_name, category, total_amount, str(split_amounts)))
+        # Insert the expense into the group_expenses table
+        cursor.execute('INSERT INTO group_expenses (group_name, category, total_amount, payer, date) VALUES (?, ?, ?, ?, ?)',
+                       (group_name, category, total_amount, payer, date))
+        expense_id = cursor.lastrowid
+
+        # Insert each member's owed amount into the expense_details table
+        for member, amount in split_amounts.items():
+            cursor.execute('INSERT INTO expense_details (expense_id, member_name, amount_owed) VALUES (?, ?, ?)',
+                           (expense_id, member, amount))
+            
         conn.commit()
         conn.close()
 
@@ -522,6 +556,7 @@ def split_expense():
 @app.route('/index')
 def index():
     return render_template('index.html')
+
 
 @app.route('/contact_us', methods=['POST'])
 def contact_us():
