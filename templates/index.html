@@ -11,11 +11,17 @@
 </head>
 <body>
 
+<!-- Profile Image (Top-left) -->
+<div class="profile-section">
+    <!-- Default image is set here, you can update it later -->
+    <img id="profilePreview" src="{{ url_for('static', filename='css/aa.png') }}" alt="Profile Picture Preview" width="120" height="120">
+</div>
+
 <div class="container">
     <h2>User Account Settings</h2>
 
     <!-- Edit Name and Profile Picture -->
-    <div class="profile-section">
+    <div class="edit-section">
         <form id="profileForm" enctype="multipart/form-data" method="POST" action="/update_profile">
             <label for="name">Edit Name:</label>
             <input type="text" id="name" name="name" placeholder="Your Name" required>
@@ -23,17 +29,8 @@
             <label for="profilePicture">Edit Profile Picture:</label>
             <input type="file" id="profilePicture" name="profilePicture" accept="image/*">
             
-            <img id="profilePreview" src="" alt="Profile Picture Preview">
-
             <button type="submit" class="btn">Save Changes</button>
         </form>
-    </div>
-
-    <!-- QR Code Generation -->
-        <!--<div class="qr-section">
-        <h3>Share Your Account</h3>
-        <button class="btn" id="generateQR">Generate QR Code</button>
-        <div id="qrCode"></div>
     </div>
 
     <!-- Contact Us Form -->
@@ -54,16 +51,12 @@
     </div>
 </div>
 
-<script>
-    // QR Code generation logic
-    //document.getElementById("generateQR").addEventListener("click", function() {
-        //fetch("/generate_qr")
-        //.then(response => response.json())
-        //.then(data => {
-            //document.getElementById("qrCode").innerHTML = '<img src="' + data.qr_code + '" alt="QR Code">';
-        //});
-    //});
+<!-- Sign-out Button (Top-right) -->
+<div class="signout-section">
+    <button class="btn" id="signOutBtn">Sign Out</button>
+</div>
 
+<script>
     // Profile picture preview functionality
     document.getElementById("profilePicture").addEventListener("change", function() {
         const reader = new FileReader();
@@ -72,22 +65,14 @@
         };
         reader.readAsDataURL(this.files[0]);
     });
+
+    // Sign-out confirmation and redirection logic
+    document.getElementById("signOutBtn").addEventListener("click", function() {
+        if (confirm("Are you sure you want to sign out?")) {
+            window.location.href = "/"; // Redirect to the logout route
+        }
+    });
 </script>
 
-
-    <!-- Sign-out Button -->
-    <div class="signout-section">
-        <button class="btn" id="signOutBtn">Sign Out</button>
-    </div>
-
-    <script>
-        // Sign-out confirmation and redirection logic
-        document.getElementById("signOutBtn").addEventListener("click", function() {
-            if (confirm("Are you sure you want to sign out?")) {
-                window.location.href = "/";// Redirect to the logout route
-            }
-        });
-    </script>
-    </body>
-    
+</body>
 </html>
