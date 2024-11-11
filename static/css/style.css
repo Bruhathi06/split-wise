@@ -91,6 +91,7 @@ input:focus, textarea:focus {
     z-index: 100;
 }
 
+<<<<<<< HEAD
 .profile-section img:hover {
     transform: scale(1.05); /* Slight scale-up on hover */
 }
@@ -100,3 +101,9 @@ input:focus, textarea:focus {
     right: 20px; /* Distance from the right */
     z-index: 100; /* Ensure it stays on top of other elements */
 }
+=======
+.link {
+    color: orange;
+    text-decoration: none;
+}
+>>>>>>> 7bc18e08698fef612728f091063eb715d061dc13

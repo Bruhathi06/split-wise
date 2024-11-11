@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="style.css">
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome Back - Login</title>
@@ -93,21 +95,23 @@
     </style>
 </head>
 <body>
-    <div class="app-name">SPLITWISE<br>APP</div> <!-- Text remains -->
     <div class="container">
-        <h1 class="welcome-message">Hello, Welcome Back</h1>
+        <h1>Login</h1>
         <form action="{{ url_for('login') }}" method="POST">
-            <input type="email" name="email" placeholder="Email Address" autocomplete="off" required>
+            <input type="email" name="email" placeholder="Email" autocomplete="off" required>
             <input type="password" name="password" placeholder="Password" required>
-            <div class="remember-me">
-                <input type="checkbox" name="remember_me"> Remember Me
-            </div>
-            <button type="submit" class="button">Sign in now</button>
-            <a href="{{ url_for('forgot_password') }}" class="link">Lost your password?</a>
-            
-            <div class="small-text">
-                By clicking on "Sign in now" you agree to <a href="#" class="link">Terms of Service</a> | <a href="#" class="link">Privacy Policy</a>
-            </div>
+            <button type="submit" class="button">Login</button>
+
+            <a href="{{ url_for('forgot_password') }}" class="link"> Forgot password</a>
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <ul>
+                {% for message in messages %}
+                    <li>{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
         </form>
     </div>
 </body>
