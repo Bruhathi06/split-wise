@@ -24,6 +24,9 @@ app.secret_key = 'your_secret_key'  # Session management
 
 mail = Mail(app)
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+db_path = os.path.join(BASE_DIR, 'splitwise.db')
+
 def QueryAsync(query):
     conn = sqlite3.connect(db_path) 
     cursor = conn.cursor()
@@ -117,8 +120,6 @@ def init_db():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
 
-    cursor.execute('DROP TABLE IF EXISTS expenses')
-    cursor.execute('DROP TABLE IF EXISTS group_expenses')
 
     # Create users table with email, password, name, and phone number
     cursor.execute('''
@@ -427,12 +428,6 @@ def history():
     return render_template('history.html',userData=data,currentUser=int(curUser))
 
 # Groups functionalities
-@app.route('/groups')
-def groups():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    return render_template('groups.html')
-
 @app.route('/create_group', methods=['GET', 'POST'])
 def create_group():
     if 'username' not in session:
@@ -443,6 +438,16 @@ def create_group():
         member_names = request.form.getlist('member_name')
         phones = request.form.getlist('phone')
         emails = request.form.getlist('email')
+
+        # Automatically add logged-in user to group
+        logged_in_user = session['username']
+        member_names.insert(0, logged_in_user)
+        phones.insert(0, request.form.get('logged_in_user_phone', ''))  # Placeholder for logged-in user's phone
+        emails.insert(0, request.form.get('logged_in_user_email', ''))  # Placeholder for logged-in user's email
+
+        if len(member_names) < 3:
+            flash('A group must have at least 3 members.', 'danger')
+            return redirect(url_for('create_group'))
 
         try:
             conn = sqlite3.connect(db_path)
@@ -465,9 +470,10 @@ def view_groups():
     if 'username' not in session:
         return redirect(url_for('login'))
 
+    logged_in_user = session['username']
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute('SELECT group_name FROM groups_table')
+    cursor.execute('SELECT group_name FROM members WHERE name = ?', (logged_in_user,))
     groups = cursor.fetchall()
     group_data = []
     for group in groups:
@@ -537,8 +543,7 @@ def split_expense():
         conn.close()
 
         # Pass the calculated split_amounts and other details to the result template
-        return render_template('split_result.html', group_name=group_name, category=category,
-                               total_amount=total_amount, split_amounts=split_amounts, date=date)
+        return redirect(url_for('group_history', group_name=group_name))
 
     # Handling GET request to show available groups
     conn = sqlite3.connect(db_path)
@@ -550,6 +555,22 @@ def split_expense():
     # Render template with groups available
     return render_template('split_expense.html', groups=groups)
 
+@app.route('/group_history')
+def group_history():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('''
+        SELECT ge.group_name, ge.category, ge.total_amount, ge.payer, ge.date, ed.member_name, ed.amount_owed
+        FROM group_expenses ge
+        JOIN expense_details ed ON ge.id = ed.expense_id
+    ''')
+    history = cursor.fetchall()
+    conn.close()
+
+    return render_template('group_history.html', history=history)
 
 #account page 
 @app.route('/index')
