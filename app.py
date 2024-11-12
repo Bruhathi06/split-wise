@@ -428,6 +428,12 @@ def history():
     return render_template('history.html',userData=data,currentUser=int(curUser))
 
 # Groups functionalities
+@app.route('/groups')
+def groups():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('groups.html')
+
 @app.route('/create_group', methods=['GET', 'POST'])
 def create_group():
     if 'username' not in session:
