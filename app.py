@@ -17,6 +17,9 @@ from flask_mail import Mail, Message
 import os
 from Services import GenerateResetLink       
 from datetime import datetime
+from GraphEngine import GetGraph
+import pandas as pd
+
 reset_tokens = {}
 
 app = Flask(__name__)
@@ -721,6 +724,16 @@ def view_history(transaction_id):
         return redirect(url_for('activity'))
 
     return render_template('view_history.html', transaction=transaction[0])
+
+@app.route("/analytics")
+def analytics():
+
+    curUser = request.args['curId']
+    conn = sqlite3.connect(r"splitwise.db")
+    query = f'''select expensename,createdon as date,total/2 as amount from expense e where creatorid = {curUser} or partnerid={curUser}'''
+    data2 = pd.read_sql(query,conn)
+    image = GetGraph(data2)
+    return render_template("analytics.html",image="data:image/png;base64,"+image)
 
 if __name__ == '__main__':
     init_db()  # Initialize the database
