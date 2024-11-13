@@ -8,7 +8,7 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background-image: url('https://www.shutterstock.com/image-vector/green-theme-background-underwater-concept-260nw-2181142547.jpg'); /* Use the new hosted image as background */
+            background-image: url('https://i.postimg.cc/v81Rq1Qx/splitwise-background-image.png'); /* Updated background image */
             background-size: cover; /* Cover the entire viewport */
             background-position: center; /* Center the background image */
             color: #fff; /* Default text color */
@@ -17,26 +17,18 @@
             height: 100vh; /* Full height of the viewport */
             text-align: center; /* Center text */
         }
-        .text-container {
+
+        /* Right-aligned container for buttons and header */
+        .right-container {
             flex: 1; /* Take up remaining space */
             display: flex;
-            justify-content: flex-end; /* Align text to the right */
-            align-items: center; /* Center vertically */
-            padding: 20px; /* Add some padding */
+            flex-direction: column; /* Stack items vertically */
+            justify-content: center; /* Vertically center the content */
+            align-items: flex-end; /* Align text and buttons to the right */
+            padding: 40px; /* Add some padding */
+            position: relative;
         }
-        .header {
-            font-size: 36px; /* Increased size for bold visibility */
-            color: #00cc00; /* Green color for the header */
-            font-weight: bold; /* Bold text */
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Shadow effect for better readability */
-            margin: 0; /* Remove default margin */
-        }
-        .sub-header {
-            font-size: 24px; /* Increased size for bold visibility */
-            color: #ffffff; /* White color for the sub-header */
-            margin: 10px 0 0 0; /* Margin for spacing */
-            font-weight: bold; /* Bold text */
-        }
+
         .container {
             background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background */
             padding: 40px;
@@ -45,12 +37,14 @@
             width: 300px; /* Fixed width */
             margin-bottom: 30px; /* Space below container */
         }
+
         h1 {
             color: #00cc00; /* Green color for the title */
             font-size: 48px; /* Increased font size for visibility */
             margin-bottom: 20px; /* Space below heading */
             font-weight: bold; /* Make "Splitwise" bold */
         }
+
         .button {
             padding: 12px 20px;
             margin: 10px;
@@ -63,25 +57,50 @@
             font-weight: bold; /* Make button text bold */
             transition: background-color 0.3s; /* Smooth transition */
         }
+
         .button:hover {
             background-color: #009900; /* Darker green on hover */
         }
+
         a {
             text-decoration: none; /* Remove underline from links */
         }
+
+        /* Text container below the buttons */
+        .text-container {
+            margin-top: 20px; /* Space between buttons and the text */
+            color: #00cc00; /* Green color for the header */
+            text-align: right; /* Align text to the right */
+        }
+
+        .header {
+            font-size: 36px; /* Increased size for bold visibility */
+            font-weight: bold; /* Bold text */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6); /* Shadow effect for better readability */
+            margin: 0; /* Remove default margin */
+        }
+
+        .sub-header {
+            font-size: 24px; /* Increased size for bold visibility */
+            color: #ffffff; /* White color for the sub-header */
+            margin: 10px 0 0 0; /* Margin for spacing */
+            font-weight: bold; /* Bold text */
+        }
+
     </style>
 </head>
 <body>
-    <div class="text-container">
-        <div>
-            <div class="header">Shared Ledger for Friends & Groups</div>
-            <div class="sub-header">Keep Track of Your Expenses</div>
+    <div class="right-container">
+        <div class="container">
+            <h1>SPLITWISE</h1>
+            <a href="{{ url_for('register') }}"><button class="button">Sign Up</button></a>
+            <a href="{{ url_for('login') }}"><button class="button">Login</button></a>
         </div>
-    </div>
-    <div class="container">
-        <h1>SPLITWISE</h1>
-        <a href="{{ url_for('register') }}"><button class="button">Sign Up</button></a>
-        <a href="{{ url_for('login') }}"><button class="button">Login</button></a>
+
+        <div class="text-container">
+        <div class="header">          Friends & Groups</div>
+        <div class="sub-header">Keep Track of Your Expenses</div>
+        </div>
     </div>
 </body>
 </html>
