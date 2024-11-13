@@ -115,11 +115,9 @@ def send_reset_email(to, link):
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
 db_path = os.path.join(BASE_DIR, 'splitwise.db')
 
-# Initialize database
 def init_db():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-
 
     # Create users table with email, password, name, and phone number
     cursor.execute('''
@@ -131,6 +129,7 @@ def init_db():
             phone TEXT NOT NULL
         )
     ''')
+
     # Create Groups table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS groups_table (
@@ -150,12 +149,13 @@ def init_db():
         )
     ''')
 
-     # Create group_expenses table
+    # Create group_expenses table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS group_expenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             group_name TEXT NOT NULL,
             category TEXT NOT NULL,
+            category_description TEXT NOT NULL,
             total_amount REAL NOT NULL,
             payer TEXT NOT NULL,
             date TEXT NOT NULL,
@@ -175,9 +175,20 @@ def init_db():
             FOREIGN KEY (member_name) REFERENCES members(name)
         )
     ''')
-    
+
+    # Alter the table to add the new column if it doesn't exist
+    try:
+        cursor.execute('''
+            ALTER TABLE group_expenses ADD COLUMN category_description TEXT;
+        ''')
+    except sqlite3.OperationalError:
+        # If the column already exists, ignore the error
+        pass
+
     conn.commit()
     conn.close()
+
+
 
 # Home page
 @app.route('/')
@@ -497,6 +508,7 @@ def split_expense():
     if request.method == 'POST':
         group_name = request.form.get('group_name')
         category = request.form.get('category')
+        category_description = request.form.get('category_description')  # New description field
         total_amount = request.form.get('total_amount')
         date = request.form.get('date')
         payer = session['username']  # Automatically set the payer to the logged-in user
@@ -536,8 +548,10 @@ def split_expense():
         split_amounts[payer] = 0 
 
         # Insert the expense into the group_expenses table
-        cursor.execute('INSERT INTO group_expenses (group_name, category, total_amount, payer, date) VALUES (?, ?, ?, ?, ?)',
-                       (group_name, category, total_amount, payer, date))
+        cursor.execute('''
+            INSERT INTO group_expenses (group_name, category, category_description, total_amount, payer, date) 
+            VALUES (?, ?, ?, ?, ?, ?)''',
+            (group_name, category, category_description, total_amount, payer, date))
         expense_id = cursor.lastrowid
 
         # Insert each member's owed amount into the expense_details table
@@ -552,13 +566,14 @@ def split_expense():
         return redirect(url_for('group_history', group_name=group_name))
 
     # Handling GET request to show available groups
+    username = session['username']
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute('SELECT group_name FROM groups_table')
+    cursor.execute('SELECT group_name FROM members WHERE name = ?', (username,))
     groups = cursor.fetchall()
     conn.close()
 
-    # Render template with groups available
+    # Render template with groups available for the logged-in user
     return render_template('split_expense.html', groups=groups)
 
 @app.route('/group_history')
@@ -566,17 +581,27 @@ def group_history():
     if 'username' not in session:
         return redirect(url_for('login'))
 
+    logged_in_user = session['username']
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT ge.group_name, ge.category, ge.total_amount, ge.payer, ge.date, ed.member_name, ed.amount_owed
+        SELECT ge.group_name, ge.category, ge.category_description, ge.total_amount, ge.payer, ge.date, ed.member_name, ed.amount_owed
         FROM group_expenses ge
         JOIN expense_details ed ON ge.id = ed.expense_id
-    ''')
+        WHERE ge.group_name IN (SELECT group_name FROM members WHERE name = ?)
+    ''', (logged_in_user,))
     history = cursor.fetchall()
     conn.close()
 
-    return render_template('group_history.html', history=history)
+    grouped_history = {}
+    for record in history:
+        key = (record[0], record[1], record[2], record[3], record[4], record[5])
+        if key not in grouped_history:
+            grouped_history[key] = []
+        grouped_history[key].append((record[6], record[7]))
+
+    return render_template('group_history.html', grouped_history=grouped_history)
+
 
 #account page 
 @app.route('/index')
