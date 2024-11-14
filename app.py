@@ -929,57 +929,89 @@ def visualize():
 
 @app.route('/generate_bar_chart')
 def generate_bar_chart():
-    # Fetch friend-related expenses from the 'expense' table
-    query_expenses = '''
+    # Ensure the user is logged in
+    if 'username' not in session:
+        flash("Please log in to view your expenses", "warning")
+        return redirect(url_for('login'))
+    
+    logged_in_user = session['username']
+    
+    # Fetch the user ID
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM users WHERE name = ?', (logged_in_user,))
+    user_id_result = cursor.fetchone()
+    user_id = user_id_result[0] if user_id_result else None
+    
+    if not user_id:
+        flash("User not found", "danger")
+        return redirect(url_for('login'))
+
+    # Fetch data from expense and group_expenses tables for the logged-in user
+    query = '''
         SELECT strftime('%Y-%m', createdon) as month, SUM(total/2) as total_amount
         FROM expense
-        GROUP BY strftime('%Y-%m', createdon)
-    '''
-    expenses_data = QueryAsync(query_expenses)
-    
-    # Fetch group-related expenses from the 'group_expenses' table
-    query_group_expenses = '''
-        SELECT strftime('%Y-%m', date) as month, SUM(total_amount) as total_amount
+        WHERE creatorid = ?
+        GROUP BY month
+        UNION ALL
+        SELECT strftime('%Y-%m', date), SUM(total_amount)
         FROM group_expenses
+        WHERE payer = ?
         GROUP BY strftime('%Y-%m', date)
     '''
-    group_expenses_data = QueryAsync(query_group_expenses)
-    
-    # Combine both datasets into a single DataFrame
-    combined_data = expenses_data + group_expenses_data
-    df = pd.DataFrame(combined_data, columns=['month', 'total_amount'])
-    
-    # Convert 'month' to datetime and handle errors
+    data = QueryAsync(query, (user_id, logged_in_user))
+    conn.close()
+
+    # Convert to DataFrame
+    df = pd.DataFrame(data, columns=['month', 'total_amount'])
+
+    # Debug: Print the fetched data
+    print("Fetched Data:")
+    print(df)
+
+    # Ensure the 'month' column is treated as a datetime for proper sorting
     df['month'] = pd.to_datetime(df['month'], format='%Y-%m', errors='coerce')
-    df = df.dropna(subset=['month'])
-    df['month'] = df['month'].dt.strftime('%Y-%m')
     
-    # Group by month to sum up the amounts and ensure no duplicates
-    df = df.groupby('month')['total_amount'].sum().reset_index()
+    # Drop any rows with NaT values due to incorrect dates
+    df.dropna(subset=['month'], inplace=True)
 
-    if df.empty:
-        print("No valid data available to display!")
-        return "No valid data available"
+    # Group by month again to ensure duplicates are removed
+    df = df.groupby('month', as_index=False)['total_amount'].sum()
 
-    # Generate the bar chart
+    # Sort the DataFrame by the 'month' column
+    df = df.sort_values(by='month')
+
+    # Debug: Check for duplicates and final data
+    print("Cleaned Data:")
+    print(df)
+
+    # Generate bar chart
     plt.figure(figsize=(10, 6))
-    bars = plt.bar(df['month'], df['total_amount'], color='orange')
+    bars = plt.bar(df['month'].dt.strftime('%Y-%m'), df['total_amount'], color='#4CAF50')
     plt.xlabel('Month')
-    plt.ylabel('Total Expenses ($)')
+    plt.ylabel('Total Expenses')
     plt.title('Total Expenses per Month')
     plt.xticks(rotation=45)
 
-    # Add numbers above each bar
+    # Annotate bars with values, with better positioning
     for bar in bars:
         height = bar.get_height()
-        plt.text(bar.get_x() + bar.get_width() / 2, height, f'{int(height)}', 
-                 ha='center', va='bottom')
+        if height > 0:  # Only annotate if the height is greater than zero
+            plt.text(
+                bar.get_x() + bar.get_width() / 2,   # Center the label horizontally
+                height + 10,                         # Add a margin above the bar
+                f'{height:.2f}',                     # Display the value
+                ha='center', va='bottom', fontsize=10
+            )
 
     # Convert plot to image
     img = io.BytesIO()
-    plt.savefig(img, format='png')
+    plt.savefig(img, format='png', bbox_inches='tight')
     img.seek(0)
     return send_file(img, mimetype='image/png')
+
+
+
 
 
 
@@ -989,47 +1021,59 @@ def generate_bar_chart():
 # Route for generating pie chart
 @app.route('/generate_pie_chart/<string:month>')
 def generate_pie_chart(month):
+    if 'username' not in session:
+        flash("Please log in to view your expenses", "warning")
+        return redirect(url_for('login'))
+    
+    logged_in_user = session['username']
+    
+    # Fetch the user ID
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM users WHERE name = ?', (logged_in_user,))
+    user_id_result = cursor.fetchone()
+    user_id = user_id_result[0] if user_id_result else None
+
+    if not user_id:
+        flash("User not found", "danger")
+        return redirect(url_for('login'))
+
     # Fetch friend-related expenses for the selected month
     query_friends = '''
-        SELECT 'friend' AS activity_type, expensename AS category, SUM(total/2) as amount, strftime('%Y-%m', createdon) as month
+        SELECT expensename AS category, SUM(total/2) as amount
         FROM expense
-        WHERE strftime('%Y-%m', createdon) = ?
+        WHERE creatorid = ? AND strftime('%Y-%m', createdon) = ?
         GROUP BY category
     '''
-    friends_data = QueryAsync(query_friends, (month,))
+    friends_data = QueryAsync(query_friends, (user_id, month))
     
     # Fetch group-related expenses for the selected month
     query_groups = '''
-        SELECT 'group' AS activity_type, category, SUM(total_amount) as amount, strftime('%Y-%m', date) as month
+        SELECT category, SUM(total_amount) as amount
         FROM group_expenses
-        WHERE strftime('%Y-%m', date) = ?
+        WHERE payer = ? AND strftime('%Y-%m', date) = ?
         GROUP BY category
     '''
-    groups_data = QueryAsync(query_groups, (month,))
+    groups_data = QueryAsync(query_groups, (logged_in_user, month))
     
     # Combine both datasets into a single DataFrame
     combined_data = friends_data + groups_data
-    df = pd.DataFrame(combined_data, columns=['activity_type', 'category', 'amount', 'month'])
+    df = pd.DataFrame(combined_data, columns=['category', 'amount'])
 
-    # Normalize the category names to ensure consistency
-    df['category'] = df['category'].str.lower().str.strip().str.replace(r'\s+', ' ', regex=True)
-    df = df[df['month'] == month]
+    # Normalize the category names
+    df['category'] = df['category'].str.lower().str.strip()
     df = df.groupby('category')['amount'].sum().reset_index()
 
-    # Calculate percentages for the legend
-    total_amount = df['amount'].sum()
-    df['percentage'] = (df['amount'] / total_amount) * 100
-
-    # Generate the pie chart without percentages on the chart
+    # Generate the pie chart
     plt.figure(figsize=(10, 8))
-    colors = plt.get_cmap("tab20").colors
-    wedges, texts = plt.pie(df['amount'], labels=None, colors=colors, startangle=90)
-
+    wedges, _, autotexts = plt.pie(
+        df['amount'], labels=df['category'], autopct='%1.1f%%', startangle=90, textprops={'fontsize': 12}
+    )
     plt.title(f'Expense Distribution for {month}', fontsize=16)
     
-    # Create a custom legend with category and percentage
-    legend_labels = [f"{cat} - {amt:.1f}%" for cat, amt in zip(df['category'], df['percentage'])]
-    plt.legend(wedges, legend_labels, title="Categories", bbox_to_anchor=(1.05, 1), loc="best", fontsize='small')
+    # Add a legend with percentages
+    legend_labels = [f"{cat} - {amt:.1f}%" for cat, amt in zip(df['category'], (df['amount'] / df['amount'].sum()) * 100)]
+    plt.legend(wedges, legend_labels, title="Categories", bbox_to_anchor=(1.05, 1), loc="best")
 
     # Convert plot to image
     img = io.BytesIO()
