@@ -148,6 +148,10 @@ def store_activity(entity_id, activity_type, description, amount, date, user_sha
     except sqlite3.Error as e:
         print(f"Error storing activity in database: {e}")
 
+import sqlite3
+
+db_path = 'splitwise.db'
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
 db_path = os.path.join(BASE_DIR, 'splitwise.db')
@@ -166,6 +170,7 @@ def init_db():
             phone TEXT NOT NULL
         )
     ''')
+
 
     # Create Groups table
     cursor.execute('''
@@ -210,8 +215,8 @@ def init_db():
             FOREIGN KEY (expense_id) REFERENCES group_expenses(id)
         )
     ''')
-
-
+    cursor.execute('DROP TABLE IF EXISTS user_activity;')
+    
     conn.commit()
     conn.close()
 
@@ -856,6 +861,142 @@ def analytics():
     data2 = pd.read_sql(query,conn)
     image = GetGraph(data2)
     return render_template("analytics.html",image="data:image/png;base64,"+image)
+
+import matplotlib.pyplot as plt
+import pandas as pd
+import io
+import base64
+from flask import send_file
+
+#Route for visualization page
+@app.route('/visualize', methods=['GET', 'POST'])
+def visualize():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+
+    logged_in_user = session['username']
+
+    # Fetch friend-related activities from the 'expense' table
+    query_expenses = '''
+        SELECT strftime('%Y-%m', createdon) as month, SUM(total/2) as total_amount
+        FROM expense
+        WHERE creatorid = (SELECT id FROM users WHERE name = ?) 
+           OR partnerid = (SELECT id FROM users WHERE name = ?)
+        GROUP BY month
+    '''
+    expenses_data = QueryAsync(query_expenses, (logged_in_user, logged_in_user))
+
+    # Fetch group-related activities from the 'group_expenses' table
+    query_group_expenses = '''
+        SELECT strftime('%Y-%m', date) as month, SUM(total_amount) as total_amount
+        FROM group_expenses
+        WHERE group_name IN (SELECT group_name FROM members WHERE name = ?)
+        GROUP BY month
+    '''
+    group_expenses_data = QueryAsync(query_group_expenses, (logged_in_user,))
+
+    # Combine both datasets
+    data = expenses_data + group_expenses_data
+    df = pd.DataFrame(data, columns=['month', 'total_amount'])
+    df = df.groupby('month').sum().reset_index()
+
+    bar_chart_url = url_for('generate_bar_chart')
+
+    if request.method == 'POST':
+        selected_month = request.form.get('selected_month')
+        return redirect(url_for('generate_pie_chart', month=selected_month))
+
+    return render_template('visualize.html', bar_chart_url=bar_chart_url)
+
+
+
+
+
+# Route for generating bar chart
+@app.route('/generate_bar_chart')
+def generate_bar_chart():
+    # Fetch data directly from expense and group_expenses tables
+    query = '''
+        SELECT strftime('%Y-%m', createdon) as month, SUM(total/2) as total_amount
+        FROM expense
+        GROUP BY month
+        UNION ALL
+        SELECT strftime('%Y-%m', date), SUM(total_amount)
+        FROM group_expenses
+        GROUP BY strftime('%Y-%m', date)
+    '''
+    data = QueryAsync(query)
+    df = pd.DataFrame(data, columns=['month', 'total_amount'])
+
+    # Generate bar chart
+    plt.figure(figsize=(10, 6))
+    plt.bar(df['month'], df['total_amount'])
+    plt.xlabel('Month')
+    plt.ylabel('Total Expenses')
+    plt.title('Total Expenses per Month')
+    plt.xticks(rotation=45)
+
+    img = io.BytesIO()
+    plt.savefig(img, format='png')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+
+
+
+# Route for generating pie chart
+@app.route('/generate_pie_chart/<string:month>')
+def generate_pie_chart(month):
+    # Fetch friend-related expenses for the selected month
+    query_friends = '''
+        SELECT 'friend' AS activity_type, expensename AS category, SUM(total/2) as amount, strftime('%Y-%m', createdon) as month
+        FROM expense
+        WHERE strftime('%Y-%m', createdon) = ?
+        GROUP BY category
+    '''
+    friends_data = QueryAsync(query_friends, (month,))
+    
+    # Fetch group-related expenses for the selected month
+    query_groups = '''
+        SELECT 'group' AS activity_type, category, SUM(total_amount) as amount, strftime('%Y-%m', date) as month
+        FROM group_expenses
+        WHERE strftime('%Y-%m', date) = ?
+        GROUP BY category
+    '''
+    groups_data = QueryAsync(query_groups, (month,))
+    
+    # Combine both datasets into a single DataFrame
+    combined_data = friends_data + groups_data
+    df = pd.DataFrame(combined_data, columns=['activity_type', 'category', 'amount', 'month'])
+
+    # Normalize the category names to ensure consistency
+    df['category'] = df['category'].str.lower().str.strip().str.replace(r'\s+', ' ', regex=True)
+    df = df[df['month'] == month]
+    df = df.groupby('category')['amount'].sum().reset_index()
+
+    # Generate the pie chart
+    plt.figure(figsize=(10, 8))  # Increase the size for better readability
+    wedges, texts, autotexts = plt.pie(
+        df['amount'], labels=df['category'], autopct='%1.1f%%', startangle=90, textprops={'fontsize': 12}
+    )
+    plt.title(f'Expense Distribution for {month}', fontsize=16)
+    
+    # Add a legend outside the pie chart
+    plt.legend(wedges, df['category'], title="Categories", bbox_to_anchor=(1.05, 1), loc="best")
+
+    # Convert plot to image
+    img = io.BytesIO()
+    plt.savefig(img, format='png', bbox_inches='tight')
+    img.seek(0)
+    return send_file(img, mimetype='image/png')
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     init_db()  # Initialize the database

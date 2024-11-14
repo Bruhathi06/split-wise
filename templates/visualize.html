@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Visualize Expenses</title>
+</head>
+<body>
+    <h2>Expense Visualization</h2>
+
+    <!-- Bar Chart -->
+    <h3>Total Expenses per Month</h3>
+    <img src="{{ bar_chart_url }}" alt="Bar Chart">
+
+    <!-- Pie Chart -->
+    <form method="POST">
+        <label for="selected_month">Select a Month:</label>
+        <input type="month" id="selected_month" name="selected_month" required>
+        <button type="submit">View Pie Chart</button>
+    </form>
+</body>
+</html>
