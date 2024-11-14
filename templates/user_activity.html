@@ -10,6 +10,9 @@
             background-color: #f5f5f5;
             margin: 20px;
             padding: 20px;
+            background-image: url('https://i.postimg.cc/m2Mwh4S5/background-image.webp');
+            background-size: cover;
+            background-position: center;
         }
         h2 {
             text-align: center;
@@ -64,7 +67,7 @@
             <td>{{ activity[0] }}</td>
             <td>{{ activity[1] }}</td>
             <!-- Format amount correctly, ensuring None values are handled gracefully -->
-            <td>${{ "%.2f" | format(activity[2] if activity[2]) }}</td>
+            <td>${{ "%.2f"|format(activity[2] if activity[2] is not none else 0) }}</td>
             <td>{{ activity[3] }}</td>
         </tr>
         {% endfor %}

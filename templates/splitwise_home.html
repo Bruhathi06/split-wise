@@ -12,7 +12,10 @@
             height: 80vh;
             font-family: Arial, sans-serif;
             margin: 2px;
-            background: linear-gradient(135deg, #e0f7fa, #e8f5e9); /* Gradient background */
+            background-image: url('https://i.postimg.cc/v81Rq1Qx/splitwise-background-image.png');
+            background-size: cover;
+            background-position: center;
+            background-blur: 5px; /* Optional for a blurred background effect */
         }
         .container {
             text-align: center;
@@ -61,20 +64,28 @@
         a {
             text-decoration: none;
         }
+        .back-home {
+            display: block;
+            margin-top: 20px;
+            color: #388e3c;
+            text-decoration: none;
+            font-size: 1.2rem;
+        }
+        .back-home:hover {
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="logo">
-            <!-- <h1>Splitwise {{username}} {{ids}}</h1> -->
             <h1>Welcome Back, {{username}}</h1>
         </div>
         <div class="card-container">
             <!-- Friends Card -->
             <a href="/friendsOptions/{{username}}?curId={{ids}}">
                 <div class="card">
-                    <!-- <img src="https://cdn4.vectorstock.com/i/1000x1000/23/33/friend-template-logo-vector-6182333.jpg" alt="Friends Icon"> -->
-                    <img src="https://icon-library.com/images/friends-icon-transparent/friends-icon-transparent-2.jpg" alt=""Friends Icon>
+                    <img src="https://icon-library.com/images/friends-icon-transparent/friends-icon-transparent-2.jpg" alt="Friends Icon">
                     <h3>Friends</h3>
                 </div>
             </a>
@@ -103,6 +114,9 @@
                 </div>
             </a>
         </div>
+        
+        <!-- Back to Home Link -->
+        <a href="http://127.0.0.1:8097/" class="back-home">Back to Home</a>
     </div>
 </body>
 </html>
