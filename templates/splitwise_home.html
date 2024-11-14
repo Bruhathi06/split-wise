@@ -1,25 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Splitwise Home</title>
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
         body {
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 80vh;
+            height: 100vh;
             font-family: Arial, sans-serif;
-            margin: 2px;
             background-image: url('https://i.postimg.cc/v81Rq1Qx/splitwise-background-image.png');
             background-size: cover;
             background-position: center;
-            background-blur: 5px; /* Optional for a blurred background effect */
+            overflow: hidden;
         }
+
+        .background-blur {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            backdrop-filter: blur(8px); /* Apply blur effect */
+            z-index: -1;
+        }
+
         .container {
             text-align: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.85);
+            border-radius: 12px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
         }
+
         .logo {
             margin-bottom: 40px;
         }
@@ -31,14 +53,14 @@
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
             letter-spacing: 3px;
             text-transform: uppercase;
-            font-family: 'Arial', sans-serif;
         }
 
         .card-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 30px;
         }
+
         .card {
             padding: 20px;
             background-color: #fff;
@@ -46,24 +68,34 @@
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
+
         .card:hover {
             transform: translateY(-10px);
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
         }
+
         .card img {
             width: 60px;
             height: 60px;
             margin-bottom: 10px;
         }
+
         .card h3 {
             color: #388e3c;
             font-size: 1.5rem;
             margin: 0;
         }
+
         a {
             text-decoration: none;
+            color: inherit;
         }
+
         .back-home {
             display: block;
             margin-top: 20px;
@@ -71,12 +103,15 @@
             text-decoration: none;
             font-size: 1.2rem;
         }
+
         .back-home:hover {
             text-decoration: underline;
         }
     </style>
 </head>
+
 <body>
+    <div class="background-blur"></div>
     <div class="container">
         <div class="logo">
             <h1>Welcome Back, {{username}}</h1>
@@ -89,7 +124,7 @@
                     <h3>Friends</h3>
                 </div>
             </a>
-            
+
             <!-- Groups Card -->
             <a href="/groups">
                 <div class="card">
@@ -97,7 +132,7 @@
                     <h3>Groups</h3>
                 </div>
             </a>
-            
+
             <!-- Activity Card -->
             <a href="/user_activity">
                 <div class="card">
@@ -106,6 +141,7 @@
                 </div>
             </a>
 
+            <!-- Visualize Card -->
             <a href="{{ url_for('visualize', curId=ids) }}">
                 <div class="card">
                     <h3>Visualize</h3>
@@ -120,7 +156,7 @@
                 </div>
             </a>
         </div>
-        
     </div>
 </body>
+
 </html>

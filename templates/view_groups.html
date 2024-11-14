@@ -49,27 +49,24 @@
 <body>
     <h1>View Groups</h1>
     <table>
-        <thead>
-            <tr>
-                <th>Group Name</th>
-                <th>Members</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for group in groups %}
-            <tr>
-                <td>{{ group.group_name }}</td>
-                <td>
-                    <ul>
-                        {% for member in group.members %}
-                        <li>{{ member[0] }} ({{ member[1] }}, {{ member[2] }})</li>
-                        {% endfor %}
-                    </ul>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+        <tr>
+            <th>Group Name</th>
+            <th>Members</th>
+        </tr>
+        {% for group_name, members in group_dict.items() %}
+        <tr>
+            <td>{{ group_name }}</td>
+            <td>
+                <ul>
+                    {% for member in members %}
+                    <li>{{ member }}</li>
+                    {% endfor %}
+                </ul>
+            </td>
+        </tr>
+        {% endfor %}
     </table>
+    
     
     <!-- Split Expense Button -->
     <a href="{{ url_for('split_expense') }}">
