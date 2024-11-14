@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activity History</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 20px;
+            padding: 20px;
+        }
+        h2 {
+            text-align: center;
+            color: #4caf50;
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+            background-color: #ffffff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px;
+            border: 1px solid #dddddd;
+            text-align: left;
+        }
+        th {
+            background-color: #4caf50;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+        .center {
+            text-align: center;
+        }
+        .no-activity {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 1.2rem;
+            color: #888888;
+        }
+    </style>
+</head>
+<body>
+    <h2>Activity History for {{ username }}</h2>
+
+    {% if user_activities %}
+    <table>
+        <tr>
+            <th>Activity Type</th>
+            <th>Description</th>
+            <th>Amount</th>
+            <th>Date</th>
+        </tr>
+        {% for activity in user_activities %}
+        <tr>
+            <td>{{ activity[0] }}</td>
+            <td>{{ activity[1] }}</td>
+            <!-- Format amount correctly, ensuring None values are handled gracefully -->
+            <td>${{ "%.2f" | format(activity[2] if activity[2]) }}</td>
+            <td>{{ activity[3] }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+    <div class="no-activity">
+        <p>No activity history found.</p>
+    </div>
+    {% endif %}
+</body>
+</html>

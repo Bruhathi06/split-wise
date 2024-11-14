@@ -8,7 +8,7 @@
         body {
             font-family: Arial, sans-serif;
             margin: 20px;
-            background: linear-gradient(135deg, #e0f7fa, #e8f5e9);
+            background: linear-gradient(135deg, #e8f5e9, #e0f7fa);
             padding: 20px;
         }
         table {
@@ -27,6 +27,8 @@
         td {
             padding: 10px;
             text-align: left;
+            vertical-align: top;
+            white-space: pre-wrap; /* Allows new lines in table cells */
         }
     </style>
 </head>
@@ -37,24 +39,36 @@
             <tr>
                 <th>Group Name</th>
                 <th>Category</th>
+                <th>Category Description</th>
                 <th>Total Amount</th>
                 <th>Payer</th>
-                <th>Member</th>
-                <th>Amount Owed</th>
+                <th>Members & Amount Owed</th>
                 <th>Date</th>
             </tr>
         </thead>
         <tbody>
-            {% for entry in history %}
+            {% for key, members in grouped_history.items() %}
+            {% set is_member = False %}
+            {% for member, amount in members %}
+                {% if session['username'] == member %}
+                    {% set is_member = True %}
+                {% endif %}
+            {% endfor %}
+            {% if is_member or session['username'] == key[4] %}
             <tr>
-                <td>{{ entry[0] }}</td>
-                <td>{{ entry[1] }}</td>
-                <td>${{ entry[2] }}</td>
-                <td>{{ entry[3] }}</td>
-                <td>{{ entry[5] }}</td>
-                <td>${{ entry[6] }}</td>
-                <td>{{ entry[4] }}</td>
+                <td>{{ key[0] }}</td> <!-- Group Name -->
+                <td>{{ key[1] }}</td> <!-- Category -->
+                <td>{{ key[2] }}</td> <!-- Category Description -->
+                <td>${{ key[3] }}</td> <!-- Total Amount -->
+                <td>{{ key[4] }}</td> <!-- Payer -->
+                <td>
+                    {% for member, amount in members %}
+                    {{ member }}: ${{ amount }}<br>
+                    {% endfor %}
+                </td>
+                <td>{{ key[5] }}</td> <!-- Date -->
             </tr>
+            {% endif %}
             {% endfor %}
         </tbody>
     </table>

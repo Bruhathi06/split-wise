@@ -17,6 +17,9 @@ from flask_mail import Mail, Message
 import os
 from Services import GenerateResetLink       
 from datetime import datetime
+from GraphEngine import GetGraph
+import pandas as pd
+
 reset_tokens = {}
 
 app = Flask(__name__)
@@ -35,6 +38,14 @@ def QueryAsync(query):
     conn.close()
     return data
 
+def QueryAsync(query, params=()):
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute(query, params)
+    data = cursor.fetchall()
+    conn.close()
+    return data
+
 def InsertAsync(query):
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
@@ -43,6 +54,13 @@ def InsertAsync(query):
     #data = cursor.fetchall()
     conn.close()
     return []
+
+def InsertAsync(query, params=()):
+    with sqlite3.connect(db_path) as conn:
+        cursor = conn.cursor()
+        cursor.execute(query, params)
+        conn.commit()
+
 
 class RealDictCursor(sqlite3.Cursor):
     def fetchone(self):
@@ -111,15 +129,32 @@ def send_reset_email(to, link):
     msg.body = f"To reset your password, click the following link: {link}"          
     mail.send(msg)
 
+def store_activity(entity_id, activity_type, description, amount, date, user_share=None):
+    print(f"Storing activity: entity_id={entity_id}, activity_type={activity_type}, description={description}, amount={amount}, user_share={user_share}, date={date}")
+    
+    if not entity_id:
+        print("Error: entity_id is missing!")
+        return
+    
+    try:
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO user_activity (entity_id, activity_type, description, amount, user_share, date)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ''', (entity_id, activity_type, description, amount, user_share, date))
+            conn.commit()
+            print("Activity stored successfully")
+    except sqlite3.Error as e:
+        print(f"Error storing activity in database: {e}")
+
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))  
 db_path = os.path.join(BASE_DIR, 'splitwise.db')
 
-# Initialize database
 def init_db():
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-
 
     # Create users table with email, password, name, and phone number
     cursor.execute('''
@@ -131,6 +166,7 @@ def init_db():
             phone TEXT NOT NULL
         )
     ''')
+
     # Create Groups table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS groups_table (
@@ -150,17 +186,17 @@ def init_db():
         )
     ''')
 
-     # Create group_expenses table
+    # Create group_expenses table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS group_expenses (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             group_name TEXT NOT NULL,
             category TEXT NOT NULL,
+            category_description TEXT NOT NULL,
             total_amount REAL NOT NULL,
             payer TEXT NOT NULL,
             date TEXT NOT NULL,
-            FOREIGN KEY (group_name) REFERENCES groups_table(group_name),
-            FOREIGN KEY (payer) REFERENCES users(name)
+            FOREIGN KEY (group_name) REFERENCES groups_table(group_name)
         )
     ''')
 
@@ -171,13 +207,15 @@ def init_db():
             expense_id INTEGER NOT NULL,
             member_name TEXT NOT NULL,
             amount_owed REAL NOT NULL,
-            FOREIGN KEY (expense_id) REFERENCES group_expenses(id),
-            FOREIGN KEY (member_name) REFERENCES members(name)
+            FOREIGN KEY (expense_id) REFERENCES group_expenses(id)
         )
     ''')
-    
+
+
     conn.commit()
     conn.close()
+
+
 
 # Home page
 @app.route('/')
@@ -375,25 +413,56 @@ def addFriend(username):
 
 #friends page routing
 
-@app.route("/addExpense",methods=["POST"])   
-def addExpense():  
+@app.route("/addExpense", methods=["POST"])
+def addExpense():
     data = request.form
-    total = data['total']
-    creatorId = data['currentUserId']  
-    partnerId = data['pid']
-    partnerExpense= data['partnerExpense']
-    creatorExpense = data['creatorExpense']
-    expenseName = data['expenseName']
-    date = data['date']
 
-    query =  f''' insert into expense(expensename,creatorid,partnerid,total,creatoramount,partneramount,createdon)
-                   values('{expenseName}',{creatorId},{partnerId},{total},{creatorExpense},{partnerExpense},'{date}') '''
-    
-    InsertAsync(query)
+    # Retrieve form data
+    total = data.get('total')
+    creatorId = data.get('currentUserId')
+    partnerId = data.get('pid')
+    partnerExpense = data.get('partnerExpense')
+    creatorExpense = data.get('creatorExpense')
+    expenseName = data.get('expenseName')
+    date = data.get('date')
 
-    print(data)
+    # Ensure all necessary fields are filled
+    if not (total and creatorId and partnerId and expenseName and date):
+        flash("Please fill in all fields", "danger")
+        return redirect(url_for("addExpense"))
 
-    return redirect(url_for("history",curId=creatorId))  
+    # Get partner's name from the database
+    partnerName = QueryAsync('SELECT name FROM users WHERE id = ?', (partnerId,))
+    partnerName = partnerName[0][0] if partnerName else "Unknown"
+
+    # Insert the expense details into the database
+    InsertAsync('''
+        INSERT INTO expense (expensename, creatorid, partnerid, total, creatoramount, partneramount, createdon)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    ''', (expenseName, creatorId, partnerId, total, creatorExpense, partnerExpense, date))
+
+    # Log the activity for the creator in the user_activity table
+    description = f"Paid '{expenseName}' to friend '{partnerName}' (user ID: {partnerId})"
+    store_activity(
+        entity_id=str(creatorId),  # Changed from user_id to entity_id
+        activity_type="friend",
+        description=description,
+        amount=creatorExpense,
+        date=date
+    )
+
+    # Log the activity for the partner (to record their part of the expense)
+    partner_description = f"Received '{expenseName}' from '{session['username']}' (user ID: {creatorId})"
+    store_activity(
+        entity_id=str(partnerId),  # Changed from user_id to entity_id
+        activity_type="friend",
+        description=partner_description,
+        amount=partnerExpense,
+        date=date
+    )
+
+    flash("Expense added successfully!", "success")
+    return redirect(url_for("history", curId=creatorId))  
 
 @app.route("/history")
 def history():
@@ -497,86 +566,158 @@ def split_expense():
     if request.method == 'POST':
         group_name = request.form.get('group_name')
         category = request.form.get('category')
+        category_description = request.form.get('category_description')
         total_amount = request.form.get('total_amount')
         date = request.form.get('date')
-        payer = session['username']  # Automatically set the payer to the logged-in user
+        payer = session['username']
 
+        # Validate form inputs
         if not group_name or not category or not total_amount or not date:
             flash("Please fill in all fields", "danger")
             return redirect(url_for('split_expense'))
 
-        try:
-            total_amount = float(total_amount)
-        except ValueError:
-            flash("Total amount must be a valid number", "danger")
-            return redirect(url_for('split_expense'))
-
-        conn = sqlite3.connect(db_path)
-        cursor = conn.cursor()
-
-        # Get all the members of the selected group
-        cursor.execute('SELECT name FROM members WHERE group_name = ?', (group_name,))
-        members = [member[0] for member in cursor.fetchall()]
+        # Fetch members of the group
+        members = QueryAsync('SELECT name FROM members WHERE group_name = ?', (group_name,))
+        members = [member[0] for member in members]
 
         if not members:
-            conn.close()
             flash("No members found in the selected group. Please add members before splitting expenses.", "danger")
             return redirect(url_for('split_expense'))
-        
-        # Calculate how much each member owes the payer
-        members_owe = [member for member in members if member != payer]
-        if len(members_owe) == 0:
-            conn.close()
-            flash("No members to split the expense with.", "danger")
-            return redirect(url_for('split_expense'))
 
-        # Calculate split amounts
-        split_amount = total_amount / len(members)
+        # Calculate the split amount
+        split_amount = float(total_amount) / len(members)
         split_amounts = {member: split_amount for member in members}
-        split_amounts[payer] = 0 
+        split_amounts[payer] = 0
 
-        # Insert the expense into the group_expenses table
-        cursor.execute('INSERT INTO group_expenses (group_name, category, total_amount, payer, date) VALUES (?, ?, ?, ?, ?)',
-                       (group_name, category, total_amount, payer, date))
-        expense_id = cursor.lastrowid
-
-        # Insert each member's owed amount into the expense_details table
-        for member, amount in split_amounts.items():
-            cursor.execute('INSERT INTO expense_details (expense_id, member_name, amount_owed) VALUES (?, ?, ?)',
-                           (expense_id, member, amount))
+        # Insert the expense into the database
+        with sqlite3.connect(db_path) as conn:
+            cursor = conn.cursor()
+            cursor.execute('''
+                INSERT INTO group_expenses (group_name, category, category_description, total_amount, payer, date)
+                VALUES (?, ?, ?, ?, ?, ?)''',
+                (group_name, category, category_description, total_amount, payer, date))
             
-        conn.commit()
-        conn.close()
+            expense_id = cursor.lastrowid
 
-        # Pass the calculated split_amounts and other details to the result template
+            # Insert the split details into the expense_details table
+            for member, amount in split_amounts.items():
+                cursor.execute('''
+                    INSERT INTO expense_details (expense_id, member_name, amount_owed)
+                    VALUES (?, ?, ?)''', (expense_id, member, amount))
+            
+            conn.commit()
+
+        # Log the activity using group_name as entity_id
+        for member, amount in split_amounts.items():
+            description = f"Split expense '{category}' for group '{group_name}'"
+            store_activity(
+                entity_id=member if member != payer else group_name,
+                activity_type="group",
+                description=description,
+                amount=total_amount,
+                date=date,
+                user_share=amount if member != payer else -amount
+            )
+
+        # Redirect to the group history page for the updated group
+        flash("Expense split successfully!", "success")
         return redirect(url_for('group_history', group_name=group_name))
 
-    # Handling GET request to show available groups
-    conn = sqlite3.connect(db_path)
-    cursor = conn.cursor()
-    cursor.execute('SELECT group_name FROM groups_table')
-    groups = cursor.fetchall()
-    conn.close()
+    # If the request method is GET, show the form
+    username = session['username']
+    groups = QueryAsync('SELECT DISTINCT group_name FROM members WHERE name = ?', (username,))
+    groups = [group[0] for group in groups]
 
-    # Render template with groups available
     return render_template('split_expense.html', groups=groups)
+
+
 
 @app.route('/group_history')
 def group_history():
     if 'username' not in session:
         return redirect(url_for('login'))
 
+    group_name = request.args.get('group_name')
+    if not group_name:
+        flash("No group selected.", "warning")
+        return redirect(url_for('groups'))
+
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
     cursor.execute('''
-        SELECT ge.group_name, ge.category, ge.total_amount, ge.payer, ge.date, ed.member_name, ed.amount_owed
+        SELECT ge.group_name, ge.category, ge.category_description, ge.total_amount, ge.payer, ge.date, ed.member_name, ed.amount_owed
         FROM group_expenses ge
         JOIN expense_details ed ON ge.id = ed.expense_id
-    ''')
+        WHERE ge.group_name = ?
+    ''', (group_name,))
     history = cursor.fetchall()
     conn.close()
 
-    return render_template('group_history.html', history=history)
+    grouped_history = {}
+    for record in history:
+        key = (record[0], record[1], record[2], record[3], record[4], record[5])
+        if key not in grouped_history:
+            grouped_history[key] = []
+        grouped_history[key].append((record[6], record[7]))
+
+    return render_template('group_history.html', grouped_history=grouped_history)
+
+@app.route('/user_activity')
+def user_activity():
+    if 'username' not in session:
+        flash("Please log in to view your activity history.", "warning")
+        return redirect(url_for('login'))
+
+    logged_in_user = session.get('username')
+
+    # Fetch the user ID
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+    cursor.execute('SELECT id FROM users WHERE name = ?', (logged_in_user,))
+    user_id_result = cursor.fetchone()
+    user_id = user_id_result[0] if user_id_result else None
+
+    if not user_id:
+        flash("User not found", "danger")
+        return redirect(url_for('login'))
+
+    print(f"Logged in user: {logged_in_user}, user_id: {user_id}")
+
+    # Fetch friend-related activities from the 'expense' table
+    cursor.execute('''
+        SELECT 'friend' AS activity_type, 
+               expensename AS description, 
+               total/2 AS user_share, 
+               createdon AS date
+        FROM expense 
+        WHERE creatorid = ? OR partnerid = ?
+        ORDER BY date DESC
+    ''', (user_id, user_id))
+    friend_activities = cursor.fetchall()
+
+    # Fetch group-related activities from the 'group_expenses' table
+    cursor.execute('''
+        SELECT 'group' AS activity_type, 
+               category AS description, 
+               (total_amount - (total_amount / (SELECT COUNT(*) FROM members WHERE group_name = ge.group_name))) AS user_share, 
+               date 
+        FROM group_expenses ge
+        WHERE group_name IN (SELECT group_name FROM members WHERE name = ?)
+        ORDER BY date DESC
+    ''', (logged_in_user,))
+    group_activities = cursor.fetchall()
+
+    # Combine both friend and group activities
+    user_activities = friend_activities + group_activities
+    print(f"Combined activities: {user_activities}")
+
+    conn.close()
+
+    if not user_activities:
+        flash("No activity history found.", "info")
+
+    return render_template('user_activity.html', user_activities=user_activities, username=logged_in_user)
+
 
 #account page 
 # Set UPLOAD_FOLDER configuration immediately after app initialization
@@ -705,6 +846,16 @@ def view_history(transaction_id):
         return redirect(url_for('activity'))
 
     return render_template('view_history.html', transaction=transaction[0])
+
+@app.route("/analytics")
+def analytics():
+
+    curUser = request.args['curId']
+    conn = sqlite3.connect(r"splitwise.db")
+    query = f'''select expensename,createdon as date,total/2 as amount from expense e where creatorid = {curUser} or partnerid={curUser}'''
+    data2 = pd.read_sql(query,conn)
+    image = GetGraph(data2)
+    return render_template("analytics.html",image="data:image/png;base64,"+image)
 
 if __name__ == '__main__':
     init_db()  # Initialize the database
