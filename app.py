@@ -579,6 +579,11 @@ def group_history():
     return render_template('group_history.html', history=history)
 
 #account page 
+# Set UPLOAD_FOLDER configuration immediately after app initialization
+app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'uploads')  # Replace with your preferred path
+
+# Create the folder if it doesn't exist
+os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 @app.route('/index')
 def index():
     return render_template('index.html')
@@ -596,16 +601,20 @@ def contact_us():
     return jsonify({"status": "success"})
 
 def send_email(name, email, message):
-    msg = MIMEText(f"Message from {name} ({email}):\n\n{message}")
-    msg['Subject'] = 'Contact Us Message'
-    msg['From'] = 'yourapp@example.com'
-    msg['To'] = 'developer@example.com'
+    try:
+        msg = MIMEText(f"Message from {name} ({email}):\n\n{message}")
+        msg['Subject'] = 'Contact Us Message'
+        msg['From'] = 'yourapp@example.com'
+        msg['To'] = 'developer@example.com'
 
-    # Send the email via your SMTP server
-    s = smtplib.SMTP('smtp.example.com')
-    s.login('yourapp@example.com', 'yourpassword')
-    s.sendmail(msg['From'], [msg['To']], msg.as_string())
-    s.quit()
+        # Using Gmail's SMTP server as an example
+        s = smtplib.SMTP('smtp.gmail.com', 587)
+        s.starttls()  # Enable TLS for security
+        s.login('developer@example.com', 'yourpassword')  # Use your app's email credentials
+        s.sendmail(msg['From'], [msg['To']], msg.as_string())
+        s.quit()
+    except Exception as e:
+        print(f"Error in send_email: {e}")
 
 @app.route('/update_profile', methods=['POST'])
 def update_profile():
