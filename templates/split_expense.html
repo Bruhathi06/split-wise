@@ -43,8 +43,9 @@
     <form method="POST" action="{{ url_for('split_expense') }}">
         <label for="group_name">Select Group:</label>
         <select name="group_name" id="group_name" required>
+            <option value="">Select a Group</option>
             {% for group in groups %}
-                <option value="{{ group[0] }}">{{ group[0] }}</option>
+               <option value="{{ group }}">{{ group }}</option>
             {% endfor %}
         </select>
         
